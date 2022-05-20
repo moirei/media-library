@@ -306,4 +306,74 @@ class Api
     {
         return in_array(InteractsWithMedia::class, class_uses_recursive($model));
     }
+
+    /**
+     * Add contents of a folder to zip archive
+     *
+     * @param \ZipArchive $zip
+     * @param Folder $folder
+     */
+    public static function addFolderToZip(\ZipArchive $zip, Folder $folder, $root = '')
+    {
+        /** @var File[] */
+        $files = $folder->files;
+
+        /** @var Folder[] */
+        $folders = $folder->folders;
+
+        foreach ($files as $file) {
+            $zip->addFromString(Api::joinPaths($root, $file->filename), $file->getContent());
+        }
+
+        foreach ($folders as $folder) {
+            static::addFolderToZip($zip, $folder, Api::joinPaths($root, $folder->name));
+        }
+    }
+
+    /**
+     * Get or create child folder in parent folder
+     *
+     * @param Folder $parent
+     * @param array $where
+     * @param array $createData
+     * @return Folder
+     */
+    public static function getOrCreateChildFolder(Folder $parent, array $where, array $createData = []): Folder
+    {
+        $folderClass = config('media-library.models.folder');
+        $folder = $folderClass::firstWhere($where);
+        if (!$folder) {
+            /** @var Folder */
+            $folder = $parent->folders()->make(array_merge($createData, $where));
+            $folder->storage()->associate($parent->storage);
+            $folder->save();
+        }
+
+        return $folder;
+    }
+
+    /**
+     * Exract folder name and location from path
+     * @param string $path
+     * @return array
+     */
+    public static function extractPathFolder(string $path)
+    {
+        return [
+            'name' => basename($path),
+            'location' => Api::formatLocation(dirname($path))
+        ];
+    }
+
+    /**
+     * Fora=mat location string to acceptable format
+     * @param string $location
+     */
+    public static function formatLocation($location)
+    {
+        if ($location === '.' || $location === '') {
+            return null;
+        }
+        return $location;
+    }
 }

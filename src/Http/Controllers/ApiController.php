@@ -3,9 +3,9 @@
 namespace MOIREI\MediaLibrary\Http\Controllers;
 
 use MOIREI\MediaLibrary\Rules\SharedContentTypes;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\Upload;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +18,7 @@ use MOIREI\MediaLibrary\Models\SharedContent;
 class ApiController extends Controller
 {
     /**
-     * Get file
+     * Get file content
      *
      * @param Request $request
      * @param File $file
@@ -35,6 +35,28 @@ class ApiController extends Controller
         return response($content, 200)
             ->header('Content-Type', $file->mimetype)
             ->header('Content-Disposition', 'inline');
+    }
+
+    /**
+     * Get file
+     *
+     * @param File $file
+     * @return \Illuminate\Http\Response
+     */
+    public function file(File $file)
+    {
+        return response()->json($file);
+    }
+
+    /**
+     * Get folder
+     *
+     * @param Folder $folder
+     * @return \Illuminate\Http\Response
+     */
+    public function folder(Folder $folder)
+    {
+        return response()->json($folder);
     }
 
     /**
@@ -97,6 +119,18 @@ class ApiController extends Controller
     }
 
     /**
+     * Doanload folder
+     *
+     * @param Folder $folder
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadFolder(Folder $folder)
+    {
+        $zipFile = $folder->zip();
+        return response()->download($zipFile);
+    }
+
+    /**
      * Doanload file but ensure public
      *
      * @param File $file
@@ -109,6 +143,21 @@ class ApiController extends Controller
         }
 
         return $this->download($file);
+    }
+
+    /**
+     * Doanload file but ensure public
+     *
+     * @param Folder $folder
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadFolderPublic(Folder $folder)
+    {
+        if ($folder->private) {
+            abort(401);
+        }
+
+        return $this->downloadFolder($folder);
     }
 
     /**
@@ -305,7 +354,6 @@ class ApiController extends Controller
     {
         $request->validate([
             'name' => 'max:64',
-            'location' => 'max:128',
             'description' => 'max:1024',
             'private' => 'boolean',
         ]);
@@ -393,11 +441,11 @@ class ApiController extends Controller
     /**
      * Get file downloadable link
      *
-     * @param File $file
+     * @param File|Folder $file
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function downloadableLink(Request $request, File $file)
+    public function downloadableLink(Request $request, File|Folder $file)
     {
         $min_ttl = 60 * 30; // 30 mins
         $request->validate([
@@ -406,7 +454,9 @@ class ApiController extends Controller
         $ttl = now()->addSeconds($request->get('ttl', $min_ttl));
 
         return response()->json([
-            'url' => $file->dowloadUrl($ttl)
+            'url' => $file->dowloadUrl($ttl),
+            'filename' => Api::isFolder($file) ? Str::snake($file->name) . '.zip' : $file->filename,
+            'mimetype' => $file->mimetype,
         ]);
     }
 

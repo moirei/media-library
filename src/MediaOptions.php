@@ -270,7 +270,7 @@ class MediaOptions
             return Api::joinPaths($folder->location, $folder->name);
         }
 
-        return $location;
+        return Api::formatLocation($location);
     }
 
     /**

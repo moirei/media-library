@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\Traits\MediaItem;
 use MOIREI\MediaLibrary\Traits\UsesUuid;
@@ -32,6 +34,9 @@ use MOIREI\MediaLibrary\Traits\UsesUuid;
  * @property \Illuminate\Database\Eloquent\Collection $files
  * @property \Illuminate\Database\Eloquent\Collection $childFiles
  * @property \Illuminate\Database\Eloquent\Collection $meta
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder disk(string $disk)
+ * @method static \Illuminate\Database\Eloquent\Builder storage(MediaStorage|string $storage)
  */
 class Folder extends Model
 {
@@ -162,15 +167,27 @@ class Folder extends Model
      }
 
      /**
-      * Scope query to only include media files of a given disk.
+      * Scope query to only include folders of a given disk.
       *
       * @param  \Illuminate\Database\Eloquent\Builder  $query
       * @param  mixed  $disk
       * @return \Illuminate\Database\Eloquent\Builder
       */
-     public function scopeDisk($query, $disk)
+     public function scopeDisk($query, string $disk)
      {
           return $query->where('disk', $disk);
+     }
+
+     /**
+      * Scope query to only include folders from a given storage.
+      *
+      * @param  \Illuminate\Database\Eloquent\Builder  $query
+      * @param  MediaStorage|string $storage
+      * @return \Illuminate\Database\Eloquent\Builder
+      */
+     public function scopeStorage($query, MediaStorage|string $storage)
+     {
+          return $query->where('storage_id', is_string($storage) ? $storage : $storage->id);
      }
 
      /**
@@ -267,5 +284,46 @@ class Folder extends Model
      public function protectedUrl(): string|null
      {
           return null;
+     }
+
+     /**
+      * Get file's download url
+      *
+      * @param strine|File $file
+      * @param Carbon|int|null $ttl
+      * @return string
+      */
+     public function dowloadUrl(Carbon | int | null $ttl = null): string
+     {
+          $route_name = config('media-library.route.name', '');
+          if ($this->private) {
+               if (is_int($ttl)) {
+                    $ttl = now()->addMinutes($ttl);
+               } elseif (is_null($ttl)) {
+                    $ttl = now()->addMinutes(30);
+               }
+
+               return URL::temporarySignedRoute(
+                    $route_name . 'download.folder.signed',
+                    $ttl,
+                    ['folder' => $this->id]
+               );
+          }
+
+          return route($route_name . 'download.folder', ['folder' => $this->id]);
+     }
+
+     /**
+      * Zip the folder and return url to local temp file
+      * @return string
+      */
+     public function zip(): string
+     {
+          $outZipPath = Api::joinPaths(sys_get_temp_dir(), Str::snake($this->name) . '-' . time() . '.zip');
+          $zip = new \ZipArchive();
+          $zip->open($outZipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+          Api::addFolderToZip($zip, $this, $this->name);
+          $zip->close();
+          return $outZipPath;
      }
 }

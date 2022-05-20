@@ -31,6 +31,17 @@ beforeEach(function () {
     $this->be($this->user);
 });
 
+it('should get file data', function () {
+    $url = route('media.file-data.protected', ['file' => $this->file->id]);
+    $response = $this->get($url);
+    $response->assertStatus(200);
+    $data = $response->json();
+
+    expect($data)->toBeArray();
+    expect($data['id'])->toEqual($this->file->id);
+    expect($data['name'])->toEqual($this->file->name);
+});
+
 it('should upload file', function () {
     $uploadedFile = UploadedFile::fake()->image('avatar.jpg');
 

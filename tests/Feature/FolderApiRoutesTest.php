@@ -51,6 +51,23 @@ it('should create folder', function () {
     Storage::disk('local')->assertExists($folder->path());
 });
 
+it('should get folder data', function () {
+    $folder = MediaStorage::active()->createFolder([
+        'name' => 'Images',
+        'location' => 'accessories',
+        'private' => true,
+    ]);
+
+    $url = route('media.folder-data.protected', ['folder' => $folder->id]);
+    $response = $this->get($url);
+    $response->assertStatus(200);
+    $data = $response->json();
+
+    expect($data)->toBeArray();
+    expect($data['id'])->toEqual($folder->id);
+    expect($data['name'])->toEqual($folder->name);
+});
+
 it('should update folder', function () {
     Storage::fake('local');
     $storage = MediaStorage::active();

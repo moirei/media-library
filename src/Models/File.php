@@ -36,6 +36,11 @@ use MOIREI\MediaLibrary\Traits\UsesUuid;
  * @property Model|null $model
  * @property MediaStorage $storage
  * @property \Illuminate\Database\Eloquent\Collection $meta
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder ofType(string $type)
+ * @method static \Illuminate\Database\Eloquent\Builder ofExtension(string $extension)
+ * @method static \Illuminate\Database\Eloquent\Builder disk(string $disk)
+ * @method static \Illuminate\Database\Eloquent\Builder storage(MediaStorage|string $storage)
  */
 class File extends Model
 {
@@ -156,7 +161,7 @@ class File extends Model
      * @param  string  $type
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeOfType($query, $type)
+    public function scopeOfType($query, string $type)
     {
         return $query->where('type', $type);
     }
@@ -168,9 +173,33 @@ class File extends Model
      * @param  string  $$extension
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeOfExtension($query, $extension)
+    public function scopeOfExtension($query, string $extension)
     {
         return $query->where('extension', $extension);
+    }
+
+    /**
+     * Scope query to only include media files of a given disk.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  mixed  $disk
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeDisk($query, string $disk)
+    {
+        return $query->where('disk', $disk);
+    }
+
+    /**
+     * Scope query to only include media files from a given storage.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  MediaStorage|string $storage
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeStorage($query, MediaStorage|string $storage)
+    {
+        return $query->where('storage_id', is_string($storage) ? $storage : $storage->id);
     }
 
     /**

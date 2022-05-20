@@ -34,6 +34,8 @@ if (!config('media-library.route.disabled.file_url', true)) {
     Route::get('/f/{file}/s',                       ApiController::class . '@get')->middleware(middleware('file.signed', 'media.signed'))->name('file.signed');
     Route::get('/f/{file}/download',                ApiController::class . '@downloadPublic')->middleware(middleware('download'))->name('download');
     Route::get('/f/{file}/download/s',              ApiController::class . '@download')->middleware(middleware('download.signed', 'media.signed'))->name('download.signed');
+    Route::get('/f/f/{folder}/download',            ApiController::class . '@downloadFolderPublic')->middleware(middleware('download'))->name('download.folder');
+    Route::get('/f/f/{folder}/download/s',          ApiController::class . '@downloadFolder')->middleware(middleware('download.signed', 'media.signed'))->name('download.folder.signed');
     Route::get('/f/{file}/stream',                  ApiController::class . '@streamPublic')->middleware(middleware('stream'))->name('stream');
     Route::get('/f/{file}/stream/s',                ApiController::class . '@stream')->middleware(middleware('stream.signed', 'media.signed'))->name('stream.signed');
 }
@@ -41,8 +43,11 @@ if (!config('media-library.route.disabled.file_url', true)) {
 // Protected file routes
 if (!config('media-library.route.disabled.file_api', true)) {
     Route::middleware('media.protected')->group(function () {
+        Route::get('/file/{file}',                                  ApiController::class . '@file')->middleware(middleware('file.protected'))->name('file-data.protected');
+        Route::get('/folder/{folder}',                              ApiController::class . '@folder')->middleware(middleware('folder.protected'))->name('folder-data.protected');
         Route::get('/protected/{file}',                             ApiController::class . '@get')->middleware(middleware('file.protected'))->name('file.protected');
         Route::get('/protected/{file}/download',                    ApiController::class . '@download')->middleware(middleware('download.protected'))->name('download.protected');
+        Route::get('/protected/folder/{folder}/download',           ApiController::class . '@downloadFolder')->middleware(middleware('download.protected'))->name('download.folder.protected');
         Route::get('/protected/{file}/stream',                      ApiController::class . '@stream')->middleware(middleware('stream.protected'))->name('stream.protected');
 
         Route::post('/upload',                                      ApiController::class . '@upload')->middleware(middleware('upload'))->name('upload');
@@ -56,6 +61,8 @@ if (!config('media-library.route.disabled.file_api', true)) {
         Route::post('/browse',                                      ApiController::class . '@browse')->middleware(middleware('browse'))->name('browse');
         Route::get('/downloadable-link/{file}',                     ApiController::class . '@downloadableLink')->middleware(middleware('downloadable-link'));
         Route::post('/downloadable-link/{file}',                    ApiController::class . '@downloadableLink')->middleware(middleware('downloadable-link'))->name('downloadable-link');
+        Route::get('/downloadable-link/folder/{folder}',            ApiController::class . '@downloadableLink')->middleware(middleware('downloadable-link'));
+        Route::post('/downloadable-link/folder/{folder}',           ApiController::class . '@downloadableLink')->middleware(middleware('downloadable-link'))->name('folder.downloadable-link');
         Route::post('/shareable-link/{file}',                       ApiController::class . '@shareablebleLink')->middleware(middleware('share'))->name('file.share');
         Route::post('/shareable-link/folder/{folder}',              ApiController::class . '@shareablebleLink')->middleware(middleware('folder.share'))->name('folder.share');
 

@@ -62,8 +62,17 @@ beforeEach(function () {
     $this->be($this->user);
 });
 
-it('should browse root files', function () {
+it('should browse ALL root files', function () {
     $response = $this->post(route('media.browse'));
+    $response->assertStatus(200);
+    $results = $response->json();
+    expect(count($results))->toEqual(2);
+});
+
+it('should browse files in root location', function () {
+    $response = $this->post(route('media.browse'), [
+        'filesOnly' => true,
+    ]);
     $response->assertStatus(200);
     $results = $response->json();
     expect(count($results))->toEqual(1);
