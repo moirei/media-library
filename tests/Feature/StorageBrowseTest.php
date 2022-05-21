@@ -8,7 +8,7 @@ use MOIREI\MediaLibrary\Models\File;
 use MOIREI\MediaLibrary\Models\MediaStorage;
 use MOIREI\MediaLibrary\Upload;
 
-uses(DatabaseMigrations::class, RefreshDatabase::class)->group('media', 'browse');
+uses(DatabaseMigrations::class, RefreshDatabase::class)->group('media', 'browse', 'storage-browse');
 
 beforeEach(function () {
     include_once __DIR__ . '/../../database/migrations/create_media_tables.php';
@@ -25,12 +25,15 @@ it('should browse root files', function () {
     ]);
 
     $uploadedFile = Upload::uploadFile($file);
-    $results = $storage->browse();
+    $results = $storage->browse()['data'];
 
     expect($results)->toBeCollection();
     expect($results->count())->toEqual(1);
-    expect($results->first())->toBeInstanceOf(File::class);
-    expect($results->first()->is($uploadedFile))->toBeTrue();
+    $first = $results->first();
+    expect($first)->toBeInstanceOf(File::class);
+    expect($first->id)->toEqual($uploadedFile->id);
+    expect($first->getTable())->toEqual($uploadedFile->getTable());
+    // expect($first->is($uploadedFile))->toBeTrue();
 });
 
 it('should browse all files', function () {
@@ -68,14 +71,15 @@ it('should browse all files', function () {
             ->save();
     }
 
-    expect($storage->browse('images')->count())->toEqual(3);
-    expect($storage->browse('images', ['private' => false])->count())->toEqual(2);
-    expect($storage->browse('images', ['type' => 'image'])->count())->toEqual(2);
-    expect($storage->browse('images', ['mime' => 'jpeg'])->count())->toEqual(1);
+    expect($storage->browse()['data']->count())->toEqual(1);
+    expect($storage->browse('images')['data']->count())->toEqual(3);
+    expect($storage->browse('images', ['private' => false])['data']->count())->toEqual(2);
+    expect($storage->browse('images', ['type' => 'image'])['data']->count())->toEqual(2);
+    expect($storage->browse('images', ['mime' => 'jpeg'])['data']->count())->toEqual(1);
 
-    expect($storage->browse('images/products')->count())->toEqual(1);
-    expect($storage->browse('images/products', ['private' => false])->count())->toEqual(1);
-    expect($storage->browse('images/products', ['private' => true])->count())->toEqual(0);
-    expect($storage->browse('images/products', ['type' => ['image']])->count())->toEqual(1);
-    expect($storage->browse('images/products', ['mime' => ['jpeg']])->count())->toEqual(1);
+    expect($storage->browse('images/products')['data']->count())->toEqual(1);
+    expect($storage->browse('images/products', ['private' => false])['data']->count())->toEqual(1);
+    expect($storage->browse('images/products', ['private' => true])['data']->count())->toEqual(0);
+    expect($storage->browse('images/products', ['type' => ['image']])['data']->count())->toEqual(1);
+    expect($storage->browse('images/products', ['mime' => ['jpeg']])['data']->count())->toEqual(1);
 });

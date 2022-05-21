@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use MOIREI\MediaLibrary\Exceptions\StorageRequiredException;
 use MOIREI\MediaLibrary\MediaOptions;
@@ -363,37 +364,87 @@ class MediaStorage extends Model
      *
      * @param string $location
      * @param array $options
-     * @return Collection
      */
-    public function browse(string $location = null, array $options = []): Collection
+    public function browse(string $location = null, array $options = [])
     {
         $modelFiles = Arr::get($options, 'modelFiles', false);
         $filesOnly = Arr::get($options, 'filesOnly', false);
         $type = Arr::get($options, 'type');
         $mime = Arr::get($options, 'mime');
         $private = Arr::get($options, 'private');
+        $paginatePage = Arr::get($options, 'paginate.page', 1);
+        $paginatePerPage = Arr::get($options, 'paginate.perPage', 10);
 
-        $fileQuery = $this->files()
-            ->when($modelFiles, function ($query) {
-                $query->whereNotNull('model_id');
-            })->when($type, function ($query) use ($type) {
-                $query->whereIn('type', array($type));
-            })->when($mime, function ($query) use ($mime) {
-                $query->whereIn('mime', array($mime));
-            })->when(!is_null($private), function ($query) use ($private) {
-                $query->where('private', $private);
-            });
+        $fileClass = config('media-library.models.file');
+        $folderClass = config('media-library.models.folder');
+        $filesTable = (new $fileClass)->getTable();
+        $foldersTable = (new $folderClass)->getTable();
 
-        $this->whereLocation($fileQuery, $location);
+        $isRoot = !$location || $location === '.' || $location === '';
+        $includeFolders = !$filesOnly && is_null($type) && is_null($mime);
 
-        $files = $fileQuery->get();
+        $query = DB::table($filesTable)->where('storage_id', $this->id);
+        $foldersQuery = DB::table($foldersTable)->where('storage_id', $this->id);
 
-        if (!$filesOnly && is_null($type) && is_null($mime)) {
-            $folders = $this->whereLocation($this->folders(), $location)->get();
-            return $folders->merge($files);
+        $query->when($modelFiles, function ($query) {
+            $query->whereNotNull('model_id');
+        })->when($type, function ($query) use ($type) {
+            $query->whereIn('type', array($type));
+        })->when($mime, function ($query) use ($mime) {
+            $query->whereIn('mime', array($mime));
+        });
+
+        if ($isRoot) {
+            $query->whereNull('folder_id');
+            $foldersQuery->whereNull('parent_id');
+        } else {
+            $folder = $this->findFolder($location);
+            $query->where('folder_id', $folder->id);
+            $foldersQuery->where('parent_id', $folder->id);
         }
 
-        return $files;
+        $query->select(['id', 'type']);
+        if ($includeFolders) {
+            $foldersQuery->select(['id', 'parent_id']); // parent_id is renamed to type on union
+            $query->union($foldersQuery);
+        }
+
+        $query->when(!is_null($private), function ($query) use ($private) {
+            $query->where('private', $private);
+        });
+
+        $skip = $paginatePage > 0 ? $paginatePerPage * ($paginatePage - 1) : 0;
+        $total = $query->count();
+        $lastPage = intval(ceil($total / $paginatePerPage));
+
+        $items = $query->skip($skip)->take($paginatePerPage)->get();
+        $fileIds = [];
+        $folderIds = [];
+        foreach ($items->toArray() as $item) {
+            $item = (array)$item;
+            $type = Arr::get($item, 'type', '');
+            // $folder table doesnt have type column, file table type column is always set
+            if (strlen($type) > 1 && !Api::isUuid($type)) {
+                $fileIds[] = $item['id'];
+            } else {
+                $folderIds[] = $item['id'];
+            }
+        }
+
+        $folders = $folderClass::whereIn('id', $folderIds)->get();
+        $files = $fileClass::whereIn('id', $fileIds)->get();
+
+        return [
+            'data' => $folders->merge($files),
+            'paginate' => [
+                'total' => $total,
+                'lastPage' => $lastPage,
+                'currentPage' => $paginatePage,
+                'perPage' => $paginatePerPage,
+                'prev' => $paginatePage > 1 ? $paginatePage - 1 : null,
+                'next' => $paginatePage < $lastPage ? $paginatePage + 1 : null,
+            ]
+        ];
     }
 
     /**
@@ -575,18 +626,5 @@ class MediaStorage extends Model
         }
 
         return  $this->folders()->firstWhere($where);
-    }
-
-    protected function whereLocation($query, $location)
-    {
-        $query->when($location, function ($query) use ($location) {
-            $query->where('location', $location);
-        })->when(!$location, function ($query) {
-            $query->where(function ($query) {
-                $query->where('location', '')
-                    ->orWhereNull('location');
-            });
-        });
-        return $query;
     }
 }

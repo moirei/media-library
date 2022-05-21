@@ -423,15 +423,18 @@ class ApiController extends Controller
     public function browse(Request $request, MediaStorage $storage)
     {
         $request->validate([
-            'location' => 'string|max:32',
+            'modelFiles' => 'boolean',
+            'location' => 'string|max:64',
             'filesOnly' => 'boolean',
             'type' => 'string|max:12',
             'mime' => 'string|max:12',
             'private' => 'boolean',
+            'paginate.page' => 'integer|max:1024',
+            'paginate.perPage' => 'integer|max:1024',
         ]);
 
         $location = $request->get('location');
-        $options = $request->only(['filesOnly', 'type', 'mime', 'private']);
+        $options = $request->only(['modelFiles', 'filesOnly', 'type', 'mime', 'private', 'paginate']);
 
         return response()->json(
             $storage->browse($location, $options)

@@ -3,12 +3,13 @@
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use MOIREI\MediaLibrary\MediaLibraryServiceProvider;
 use MOIREI\MediaLibrary\Models\MediaStorage;
 use MOIREI\MediaLibrary\Upload;
 
-uses(DatabaseMigrations::class, RefreshDatabase::class)->group('api-routes', 'browse-api-routes');
+uses(DatabaseMigrations::class, RefreshDatabase::class)->group('api-routes', 'browse', 'browse-api-routes');
 
 beforeEach(function () {
     include_once __DIR__ . '/../../database/migrations/create_media_tables.php';
@@ -74,7 +75,7 @@ it('should browse files in root location', function () {
         'filesOnly' => true,
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(1);
     expect($results[0])->toHaveKeys(['id', 'fqfn', 'name']);
     expect($results[0]['id'])->toEqual($this->files[0]->id);
@@ -87,7 +88,7 @@ it('should browse files in location', function () {
         'location' => 'images',
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(3);
 });
 
@@ -97,7 +98,7 @@ it('should browse public files in location', function () {
         'private' => false
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(2);
 });
 
@@ -107,7 +108,7 @@ it('should browse image files in location', function () {
         'type' => 'image'
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(2);
 });
 
@@ -117,7 +118,7 @@ it('should browse JPEG files in location', function () {
         'mime' => 'jpeg'
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(1);
 });
 
@@ -126,7 +127,7 @@ it('should browse files in location [subfolder]', function () {
         'location' => 'images/products',
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(1);
 });
 
@@ -136,7 +137,7 @@ it('should browse public files in location [subfolder]', function () {
         'private' => false
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(1);
 });
 
@@ -146,7 +147,7 @@ it('should browse private files in location [subfolder]', function () {
         'private' => true,
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(0);
 });
 
@@ -156,7 +157,7 @@ it('should browse image files in location [subfolder]', function () {
         'type' => 'image'
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(1);
 });
 
@@ -166,6 +167,6 @@ it('should browse JPEG files in location [subfolder]', function () {
         'mime' => 'jpeg'
     ]);
     $response->assertStatus(200);
-    $results = $response->json();
+    $results = Arr::get($response->json(), 'data');
     expect(count($results))->toEqual(1);
 });

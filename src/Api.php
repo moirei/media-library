@@ -405,4 +405,12 @@ class Api
         }
         return $location;
     }
+
+    public static function columnName(string $table, string $column, $when)
+    {
+        if ($when) {
+            return "$table.$column";
+        }
+        return $column;
+    }
 }

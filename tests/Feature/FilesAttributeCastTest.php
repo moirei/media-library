@@ -473,5 +473,5 @@ it('should upload file with location and associate via options', function () {
 
     expect($model->files->count())->toEqual(1);
     expect(in_array($model->files->first()->id, $storage->files->map->id->toArray()))->toBeTrue();
-    expect($storage->browse('products', ['filesOnly' => true]))->toHaveCount(1);
+    expect($storage->browse('products', ['filesOnly' => true])['data'])->toHaveCount(1);
 });
