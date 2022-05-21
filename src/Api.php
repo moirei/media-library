@@ -44,12 +44,41 @@ class Api
      */
     public static function placeholderImages(): array
     {
-        $images = [
-            'alt' => 'Placeholder image',
-        ];
-
-        foreach (config('media-library.uploads.images.sizes') as $size => $v) {
+        $images = [];
+        foreach (config('media-library.uploads.images.responsive.sizes', []) as $size => $v) {
             $images[$size] = config('media-library.placeholder');
+        }
+        return $images;
+    }
+
+    /**
+     * Get file's responsive image public url
+     *
+     * @param File $file
+     * @param Carbon|int|null $ttl
+     * @return array
+     */
+    public static function getResponsivePublicUrl(File $file, $ttl = null): array
+    {
+        $images = [];
+
+        if ($file->private) {
+            foreach ($file->responsive as $item) {
+                // TODO: add size as url param (with dynamic imaging)
+                $url = $file->publicUrl($ttl);
+                $images[$item['key']] = $url;
+            }
+        } else {
+            foreach ($file->responsive as $item) {
+                $sizeName = $item['name'] . ".$file->extension";
+                $url = $file->storage->path(
+                    $file->location,
+                    $file->id,
+                    $file->filename,
+                    $sizeName,
+                );
+                $images[$item['key']] = $url;
+            }
         }
 
         return $images;

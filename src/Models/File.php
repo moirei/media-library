@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use MOIREI\MediaLibrary\Api;
+use MOIREI\MediaLibrary\Casts\ResponsiveImage;
 use MOIREI\MediaLibrary\Traits\MediaItem;
 use MOIREI\MediaLibrary\Traits\UsesUuid;
 
@@ -66,7 +67,7 @@ class File extends Model
         'updated_at' => 'datetime',
         'private' => 'boolean',
         'meta' => AsCollection::class,
-        // 'image' => ResponsiveImage::class,
+        'image' => ResponsiveImage::class,
         'responsive' => 'json',
     ];
 
