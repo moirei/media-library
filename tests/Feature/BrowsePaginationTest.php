@@ -50,9 +50,9 @@ it('should paginate files [page 1]', function () {
 
     expect($data)->toHaveKeys(['data', 'paginate']);
     expect(count($data['data']))->toEqual(20);
-    expect($data['paginate'])->toHaveKeys(['total', 'lastPage', 'currentPage', 'perPage', 'prev', 'next']);
+    expect($data['paginate'])->toHaveKeys(['total', 'pages', 'currentPage', 'perPage', 'prev', 'next']);
     expect($data['paginate']['total'])->toEqual($this->totalFiles);
-    // expect($data['paginate']['lastPage'])->toEqual(5);
+    expect($data['paginate']['pages'])->toEqual(3);
     expect($data['paginate']['perPage'])->toEqual(20);
     expect($data['paginate']['currentPage'])->toEqual(1);
     expect($data['paginate']['prev'])->toBeNull();

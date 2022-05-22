@@ -415,7 +415,7 @@ class MediaStorage extends Model
 
         $skip = $paginatePage > 0 ? $paginatePerPage * ($paginatePage - 1) : 0;
         $total = $query->count();
-        $lastPage = intval(ceil($total / $paginatePerPage));
+        $paginatePages = intval(ceil($total / $paginatePerPage));
 
         $items = $query->skip($skip)->take($paginatePerPage)->get();
         $fileIds = [];
@@ -438,11 +438,11 @@ class MediaStorage extends Model
             'data' => $folders->merge($files),
             'paginate' => [
                 'total' => $total,
-                'lastPage' => $lastPage,
+                'pages' => $paginatePages,
                 'currentPage' => $paginatePage,
                 'perPage' => $paginatePerPage,
                 'prev' => $paginatePage > 1 ? $paginatePage - 1 : null,
-                'next' => $paginatePage < $lastPage ? $paginatePage + 1 : null,
+                'next' => $paginatePage < $paginatePages ? $paginatePage + 1 : null,
             ]
         ];
     }
