@@ -363,17 +363,17 @@ class MediaStorage extends Model
      * Browse location and return all media items
      *
      * @param string $location
-     * @param array $options
+     * @param array $filters
      */
-    public function browse(string $location = null, array $options = [])
+    public function browse(string $location = null, array $filters = [])
     {
-        $modelFiles = Arr::get($options, 'modelFiles', false);
-        $filesOnly = Arr::get($options, 'filesOnly', false);
-        $type = Arr::get($options, 'type');
-        $mime = Arr::get($options, 'mime');
-        $private = Arr::get($options, 'private');
-        $paginatePage = Arr::get($options, 'paginate.page', 1);
-        $paginatePerPage = Arr::get($options, 'paginate.perPage', 10);
+        $modelFiles = Arr::get($filters, 'modelFiles', false);
+        $filesOnly = Arr::get($filters, 'filesOnly', false);
+        $type = Arr::get($filters, 'type');
+        $mime = Arr::get($filters, 'mime');
+        $private = Arr::get($filters, 'private');
+        $paginatePage = Arr::get($filters, 'paginate.page', 1);
+        $paginatePerPage = Arr::get($filters, 'paginate.perPage', 10);
 
         $fileClass = config('media-library.models.file');
         $folderClass = config('media-library.models.folder');
@@ -383,10 +383,10 @@ class MediaStorage extends Model
         $isRoot = !$location || $location === '.' || $location === '';
         $includeFolders = !$filesOnly && is_null($type) && is_null($mime);
 
-        $query = DB::table($filesTable)->where('storage_id', $this->id);
-        $foldersQuery = DB::table($foldersTable)->where('storage_id', $this->id);
+        $foldersQuery = DB::table($foldersTable)->where('storage_id', $this->id)->whereNull('deleted_at');
+        $filesQuery = DB::table($filesTable)->where('storage_id', $this->id)->whereNull('deleted_at');
 
-        $query->when($modelFiles, function ($query) {
+        $filesQuery->when($modelFiles, function ($query) {
             $query->whereNotNull('model_id');
         })->when($type, function ($query) use ($type) {
             $query->whereIn('type', array($type));
@@ -395,44 +395,33 @@ class MediaStorage extends Model
         });
 
         if ($isRoot) {
-            $query->whereNull('folder_id');
+            $filesQuery->whereNull('folder_id');
             $foldersQuery->whereNull('parent_id');
         } else {
             $folder = $this->findFolder($location);
-            $query->where('folder_id', $folder->id);
+            $filesQuery->where('folder_id', $folder->id);
             $foldersQuery->where('parent_id', $folder->id);
         }
 
-        $query->select(['id', 'type']);
+        $filesQuery->select(['id']);
         if ($includeFolders) {
-            $foldersQuery->select(['id', 'parent_id']); // parent_id is renamed to type on union
-            $query->union($foldersQuery);
+            $foldersQuery->select(['id']); // parent_id is renamed to type on union
+            $filesQuery->union($foldersQuery);
         }
 
-        $query->when(!is_null($private), function ($query) use ($private) {
+        $filesQuery->when(!is_null($private), function ($query) use ($private) {
             $query->where('private', $private);
         });
 
         $skip = $paginatePage > 0 ? $paginatePerPage * ($paginatePage - 1) : 0;
-        $total = $query->count();
+        $total = $filesQuery->count();
         $paginatePages = intval(ceil($total / $paginatePerPage));
 
-        $items = $query->skip($skip)->take($paginatePerPage)->get();
-        $fileIds = [];
-        $folderIds = [];
-        foreach ($items->toArray() as $item) {
-            $item = (array)$item;
-            $type = Arr::get($item, 'type', '');
-            // $folder table doesnt have type column, file table type column is always set
-            if (strlen($type) > 1 && !Api::isUuid($type)) {
-                $fileIds[] = $item['id'];
-            } else {
-                $folderIds[] = $item['id'];
-            }
-        }
+        $items = $filesQuery->skip($skip)->take($paginatePerPage)->get();
+        $ids = $items->map->id->toArray();
 
-        $folders = $folderClass::whereIn('id', $folderIds)->get();
-        $files = $fileClass::whereIn('id', $fileIds)->get();
+        $folders = $folderClass::whereIn('id', $ids)->get();
+        $files = $fileClass::whereIn('id', $ids)->get();
 
         return [
             'data' => $folders->merge($files),

@@ -64,7 +64,6 @@ class CreateMediaTables extends Migration
             $table->unsignedBigInteger('original_size');
             $table->unsignedBigInteger('total_size');
             $table->json('meta')->nullable();
-            $table->json('image')->nullable();
             $table->json('responsive')->nullable();
 
             $table->string('model_type')->nullable();

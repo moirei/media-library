@@ -62,22 +62,43 @@ class Api
     {
         $images = [];
 
-        if ($file->private) {
-            foreach ($file->responsive as $item) {
-                // TODO: add size as url param (with dynamic imaging)
-                $url = $file->publicUrl($ttl);
+        if ($file->responsive) {
+            $responsive = $file->responsive;
+        } else {
+            $responsive = [];
+            // $originalName = Str::slug($file->name);
+            foreach (config('media-library.uploads.images.responsive.sizes') as $key => $values) {
+                // $name = "$originalName-$key";
+                $width  = data_get($values, '0');
+                $height  = data_get($values, '1');
+                array_push($responsive, [
+                    // 'name' => $name,
+                    // 'filename' => "$name.$file->extension",
+                    'key' => $key,
+                    'width' => $width,
+                    'height' => $height,
+                ]);
+            }
+        }
+
+        if ($file->private || !$file->responsive) {
+            foreach ($responsive as $item) {
+                $url = $file->publicUrl($ttl, [
+                    'width' => $item['width'],
+                    'height' => $item['height'],
+                ]);
                 $images[$item['key']] = $url;
             }
         } else {
-            foreach ($file->responsive as $item) {
-                $sizeName = $item['name'] . ".$file->extension";
-                $url = $file->storage->path(
-                    $file->location,
-                    $file->id,
-                    $file->filename,
-                    $sizeName,
+            $disk = $file->disk();
+            foreach ($responsive as $item) {
+                $images[$item['key']] = Storage::disk($disk)->url(
+                    $file->storage->path(
+                        $file->location,
+                        $file->id,
+                        $item['filename'],
+                    )
                 );
-                $images[$item['key']] = $url;
             }
         }
 
@@ -123,7 +144,7 @@ class Api
      */
     public static function isSignableDisk(string $disk): bool
     {
-        return $disk === 'local';
+        return $disk === 's3';
     }
 
     /**

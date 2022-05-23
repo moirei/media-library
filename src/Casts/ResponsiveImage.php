@@ -21,13 +21,7 @@ class ResponsiveImage extends MediaCast implements CastsAttributes
      */
     public function get($model, $key, $value, $attributes)
     {
-        // public files may have responsive images saved
-        $value = is_string($value) ? json_decode($value) : $value;
-
-        if (!$model->private and !empty($value)) return $value;
-
-        $images = $value ? Api::getResponsivePublicUrl($model) : Api::placeholderImages();
-
+        $images = Api::getResponsivePublicUrl($model);
         return new ArrayObject($images);
     }
 
@@ -42,6 +36,6 @@ class ResponsiveImage extends MediaCast implements CastsAttributes
      */
     public function set($model, $key, $value, $attributes)
     {
-        return is_string($value) ? $value : json_encode($value);
+        return [];
     }
 }

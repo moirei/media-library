@@ -307,31 +307,34 @@ class File extends Model
     /**
      * Get file's public url
      *
-     * @param string|File $file
      * @param Carbon|int|null $ttl
+     * @param array $routeOptions
      * @return string|null
      */
-    public function publicUrl(Carbon | int | null $ttl = null): string|null
+    public function publicUrl(Carbon | int | null $ttl = null, $routeOptions = []): string|null
     {
+        $disk = $this->disk();
         if ($this->private) {
             if (is_int($ttl)) $ttl = now()->addMinutes($ttl);
             elseif (is_null($ttl)) $ttl = now()->addMinutes(30);
 
-            if (self::isSignableDisk($this->disk())) {
-                $route_name = config('media-library.route.name', '');
-                return URL::temporarySignedRoute(
-                    $route_name . 'file.signed',
-                    $ttl,
-                    ['file' => $this->id]
+            if (Api::isSignableDisk($disk)) {
+                return Storage::disk($disk)->temporaryUrl(
+                    $this->uri(),
+                    $ttl
                 );
             }
-            return Storage::disk($this->disk())->temporaryUrl(
-                $this->uri(),
-                $ttl
+
+            $route_name = config('media-library.route.name', '');
+
+            return URL::temporarySignedRoute(
+                $route_name . 'file.signed',
+                $ttl,
+                array_merge($routeOptions, ['file' => $this->id])
             );
         }
 
-        return Storage::disk($this->disk())->url($this->uri());
+        return Storage::disk($disk)->url($this->uri());
     }
 
     /**
