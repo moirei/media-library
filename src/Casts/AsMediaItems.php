@@ -35,56 +35,60 @@ class AsMediaItems extends MediaCast
      */
     public function set($model, $key, $value, $attributes)
     {
-        if ($value instanceof MediaItemsAttribute) {
-            $ids = $value->map->id;
-        } elseif (is_array($value) && Arr::isAssoc($value)) {
-            if (!empty($attributes[$key])) {
-                $ids = is_string($attributes[$key]) ? json_decode($attributes[$key], true) : [];
-            } else {
-                $ids = [];
-            }
+        $ids = [];
 
-            if ($uploads = Arr::get($value, 'upload')) {
-                $options = null;
-                $location = null;
-                if (method_exists($model, 'mediaConfig')) {
-                    $options = Arr::get($this->model->mediaConfig(), $key);
+        if (!is_null($value)) {
+            if ($value instanceof MediaItemsAttribute) {
+                $ids = $value->map->id;
+            } elseif (is_array($value) && Arr::isAssoc($value)) {
+                if (!empty($attributes[$key])) {
+                    $ids = is_string($attributes[$key]) ? json_decode($attributes[$key], true) : [];
+                } else {
+                    $ids = [];
                 }
 
-                if (($is_array = is_array($uploads)) && Arr::isAssoc($uploads)) {
-                    $location  = Arr::get($uploads, 'location');
-                    $uploads  = Arr::get($uploads, 'files');
-                } elseif (!$is_array) {
-                    $uploads = [$uploads];
-                }
-
-                foreach ($uploads as $upload) {
-                    $upload = MediaStorage::active()->upload($upload, $options)->for($model);
-                    if ($location) {
-                        $upload->location($location);
+                if ($uploads = Arr::get($value, 'upload')) {
+                    $options = null;
+                    $location = null;
+                    if (method_exists($model, 'mediaConfig')) {
+                        $options = Arr::get($this->model->mediaConfig(), $key);
                     }
-                    if ($upload->validate()) {
-                        $ids[] = $upload->save()->id;
+
+                    if (($is_array = is_array($uploads)) && Arr::isAssoc($uploads)) {
+                        $location  = Arr::get($uploads, 'location');
+                        $uploads  = Arr::get($uploads, 'files');
+                    } elseif (!$is_array) {
+                        $uploads = [$uploads];
                     }
-                }
-            } elseif ($deletes = Arr::get($value, 'delete')) {
-                $deletes = Api::getFileIds($deletes);
-                $fileClass = (string)config('media-library.models.file');
-                foreach ($deletes as $id) {
-                    optional($fileClass::get($id))->forceDelete();
-                }
-                $ids = array_diff($ids, $deletes);
-            }
-        } else {
-            $ids = array_map(function ($item) {
-                if (Api::isFile($item)) {
-                    $item = $item->id;
-                } elseif (!Api::isUuid($item)) {
+
+                    foreach ($uploads as $upload) {
+                        $upload = MediaStorage::active()->upload($upload, $options)->for($model);
+                        if ($location) {
+                            $upload->location($location);
+                        }
+                        if ($upload->validate()) {
+                            $ids[] = $upload->save()->id;
+                        }
+                    }
+                } elseif ($deletes = Arr::get($value, 'delete')) {
+                    $deletes = Api::getFileIds($deletes);
                     $fileClass = (string)config('media-library.models.file');
-                    $item = optional($fileClass::get($item))->id;
+                    foreach ($deletes as $id) {
+                        optional($fileClass::get($id))->forceDelete();
+                    }
+                    $ids = array_diff($ids, $deletes);
                 }
-                return $item;
-            }, $value);
+            } else {
+                $ids = array_map(function ($item) {
+                    if (Api::isFile($item)) {
+                        $item = $item->id;
+                    } elseif (!Api::isUuid($item)) {
+                        $fileClass = (string)config('media-library.models.file');
+                        $item = optional($fileClass::get($item))->id;
+                    }
+                    return $item;
+                }, $value);
+            }
         }
 
         return [

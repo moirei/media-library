@@ -31,8 +31,9 @@ class AttachmentController extends Controller
             $request->file('file'),
         );
 
-        if (config('media-library.clean_file_name'))
+        if (config('media-library.clean_file_name')) {
             $upload->cleanFilename(config('media-library.clean_file_name.special_characters', false));
+        }
 
         $attachment = $upload->save();
 

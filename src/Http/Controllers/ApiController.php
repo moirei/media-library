@@ -168,18 +168,18 @@ class ApiController extends Controller
      */
     public function stream(File $file)
     {
-        $path = $file->path();
+        $uri = $file->uri();
         $disk = $file->disk();
 
-        return response()->stream(function () use ($path, $disk) {
-            $stream = Storage::disk($disk)->readStream($path);
+        return response()->stream(function () use ($uri, $disk) {
+            $stream = Storage::disk($disk)->readStream($uri);
             fpassthru($stream);
             if (is_resource($stream)) {
                 fclose($stream);
             }
         }, 200, [
             'Content-Type'          => $file->mimetype,
-            'Content-Length'        => Storage::disk($disk)->size($path),
+            'Content-Length'        => Storage::disk($disk)->size($uri),
         ]);
     }
 

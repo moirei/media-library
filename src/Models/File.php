@@ -325,10 +325,10 @@ class File extends Model
                 );
             }
 
-            $route_name = config('media-library.route.name', '');
+            $routeName = config('media-library.route.name', '');
 
             return URL::temporarySignedRoute(
-                $route_name . 'file.signed',
+                $routeName . 'file.signed',
                 $ttl,
                 array_merge($routeOptions, ['file' => $this->id])
             );
@@ -346,19 +346,19 @@ class File extends Model
      */
     public function url(Carbon | int | null $ttl = null): string|null
     {
-        $route_name = config('media-library.route.name', '');
+        $routeName = config('media-library.route.name', '');
         if ($this->private) {
             if (is_int($ttl)) $ttl = now()->addMinutes($ttl);
             elseif (is_null($ttl)) $ttl = now()->addMinutes(30);
 
             return URL::temporarySignedRoute(
-                $route_name . 'file.signed',
+                $routeName . 'file.signed',
                 $ttl,
                 ['file' => $this->id]
             );
         }
 
-        return route($route_name . 'file', ['file' => $this->id]);
+        return route($routeName . 'file', ['file' => $this->id]);
     }
 
     /**
@@ -367,8 +367,8 @@ class File extends Model
      */
     public function protectedUrl(): string|null
     {
-        $route_name = config('media-library.route.name', '');
-        return route($route_name . 'file.protected', ['file' => $this->id]);
+        $routeName = config('media-library.route.name', '');
+        return route($routeName . 'file.protected', ['file' => $this->id]);
     }
 
     /**
@@ -380,21 +380,18 @@ class File extends Model
      */
     public function dowloadUrl(Carbon | int | null $ttl = null): string
     {
-        $route_name = config('media-library.route.name', '');
+        $routeName = config('media-library.route.name', '');
         if ($this->private) {
-            if (is_int($ttl)) {
-                $ttl = now()->addMinutes($ttl);
-            } elseif (is_null($ttl)) {
-                $ttl = now()->addMinutes(30);
-            }
+            if (is_int($ttl)) $ttl = now()->addMinutes($ttl);
+            elseif (is_null($ttl)) $ttl = now()->addMinutes(30);
 
             return URL::temporarySignedRoute(
-                $route_name . 'download.signed',
+                $routeName . 'download.signed',
                 $ttl,
                 ['file' => $this->id]
             );
         }
 
-        return route($route_name . 'download', ['file' => $this->id]);
+        return route($routeName . 'download', ['file' => $this->id]);
     }
 }

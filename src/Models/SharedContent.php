@@ -104,8 +104,8 @@ class SharedContent extends Model implements AuthorizableContract, Authenticatab
      */
     public function url(): string
     {
-        $route_name = config('media-library.route.name', '');
-        return route($route_name . 'share', ['shared' => $this->id]);
+        $routeName = config('media-library.route.name', '');
+        return route($routeName . 'share', ['shared' => $this->id]);
     }
 
     /**

@@ -1,67 +1,74 @@
 {
-    "name": "moirei/media-library",
-    "description": "Manage media library with a directory system and associate files with Eloquent models.",
-    "homepage": "https://moirei.github.io/media-library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Augustus",
-            "email": "augustusokoye@moirei.com"
-        }
-    ],
-    "keywords":[
-        "MOIREI",
-        "Laravel",
-        "media",
-        "library",
-        "files",
-        "cloud",
-        "images",
-        "audios",
-        "videos",
-        "downloads",
-        "cms"
-    ],
-    "scripts": {
-        "test": "./vendor/bin/pest",
-        "test-f": "vendor/bin/phpunit --filter"
-    },
-    "require": {
-        "php": "^7.2|^8.0",
-        "illuminate/console": "^7.0|^8.0",
-        "illuminate/database": "^7.0|^8.0",
-        "illuminate/http": "^7.0|^8.0",
-        "illuminate/routing": "^7.0|^8.0",
-        "illuminate/support": "^7.0|^8.0",
-        "intervention/image": "^2.",
-        "league/flysystem": "^1.0.64",
-        "intervention/imagecache": "^2.5"
-    },
-    "require-dev": {
-        "pestphp/pest": "^1.20",
-        "pestphp/pest-plugin-laravel": "^1.1",
-        "orchestra/testbench": "^6.22"
-    },
-    "suggest": {
-        "league/flysystem-aws-s3-v3": "Required to use AWS S3 file storage"
-    },
-    "autoload": {
-        "psr-4": {
-            "MOIREI\\MediaLibrary\\": "src",
-            "MOIREI\\MediaLibrary\\Tests\\": "tests"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "MOIREI\\MediaLibrary\\MediaLibraryServiceProvider"
-            ],
-            "aliases": {
-                "MediaApi": "MOIREI\\MediaLibrary\\Facades\\MediaApi",
-                "MediaAttachmentApi": "MOIREI\\MediaLibrary\\Facades\\MediaAttachmentApi"
-            }
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+  "name": "moirei/media-library",
+  "description": "Manage media library with a directory system and associate files with Eloquent models.",
+  "homepage": "https://moirei.github.io/media-library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Augustus",
+      "email": "augustusokoye@moirei.com"
+    }
+  ],
+  "keywords": [
+    "MOIREI",
+    "Laravel",
+    "media",
+    "library",
+    "files",
+    "cloud",
+    "images",
+    "audios",
+    "videos",
+    "downloads",
+    "cms"
+  ],
+  "scripts": {
+    "test": "./vendor/bin/pest",
+    "test-f": "vendor/bin/phpunit --filter"
+  },
+  "require": {
+    "php": "^7.2|^8.0",
+    "illuminate/console": "^7.0|^8.0|^9.0",
+    "illuminate/database": "^7.0|^8.0|^9.0",
+    "illuminate/http": "^7.0|^8.0|^9.0",
+    "illuminate/routing": "^7.0|^8.0|^9.0",
+    "illuminate/support": "^7.0|^8.0|^9.0",
+    "intervention/image": "^2.7",
+    "league/flysystem": "^3.0",
+    "intervention/imagecache": "^2.5"
+  },
+  "require-dev": {
+    "league/flysystem-aws-s3-v3": "^3.0",
+    "pestphp/pest": "^1.21",
+    "pestphp/pest-plugin-laravel": "^1.2",
+    "orchestra/testbench": "^7.5",
+    "thled/pest-plugin-shorthands": "^1.1"
+  },
+  "suggest": {
+    "league/flysystem-aws-s3-v3": "Required to use AWS S3 file storage"
+  },
+  "autoload": {
+    "psr-4": {
+      "MOIREI\\MediaLibrary\\": "src",
+      "MOIREI\\MediaLibrary\\Tests\\": "tests"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "MOIREI\\MediaLibrary\\MediaLibraryServiceProvider"
+      ],
+      "aliases": {
+        "MediaApi": "MOIREI\\MediaLibrary\\Facades\\MediaApi",
+        "MediaAttachmentApi": "MOIREI\\MediaLibrary\\Facades\\MediaAttachmentApi"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
   }
+}

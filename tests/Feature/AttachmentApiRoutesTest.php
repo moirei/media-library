@@ -16,7 +16,9 @@ beforeEach(function () {
     (new \CreateMediaTables)->up();
     app()->register(MediaLibraryServiceProvider::class);
 
-    $this->disk = config('media-library.uploads.attachments.disk', 'local');
+    $this->disk = 'local';
+    config(['media-library.uploads.attachments.disk' => $this->disk]);
+
     Storage::fake($this->disk);
     $this->user = new class(['name' => 'John']) extends \Illuminate\Foundation\Auth\User
     {
@@ -41,7 +43,7 @@ it('should upload an attachment', function () {
     expect(Arr::get($attachmentJson, 'alt'))->toBeString();
     expect(Arr::get($attachmentJson, 'url'))->toBeString();
 
-    Storage::disk('local')->assertExists($attachment->uri());
+    Storage::disk($this->disk)->assertExists($attachment->uri());
 });
 
 it('should delete an attachment', function () {
@@ -65,5 +67,5 @@ it('should delete an attachment', function () {
     expect(Arr::get($attachmentJson, 'alt'))->toEqual($attachment->alt);
     expect(Arr::get($attachmentJson, 'url'))->toEqual($attachment->url);
 
-    Storage::disk('local')->assertMissing($path);
+    Storage::disk($this->disk)->assertMissing($path);
 });

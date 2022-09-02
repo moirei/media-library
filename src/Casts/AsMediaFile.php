@@ -33,38 +33,40 @@ class AsMediaFile extends MediaCast
      */
     public function set($model, $key, $value, $attributes)
     {
-        if (is_array($value)) {
-            if ($set = Arr::get($value, 'set')) {
-                if (Api::isUuid($set)) {
-                    $value = $set;
-                } else {
-                    $fileClass = (string)config('media-library.models.file');
-                    $value = optional($fileClass::get($set))->id;
+        if (!is_null($value)) {
+            if (is_array($value)) {
+                if ($set = Arr::get($value, 'set')) {
+                    if (Api::isUuid($set)) {
+                        $value = $set;
+                    } else {
+                        $fileClass = (string)config('media-library.models.file');
+                        $value = optional($fileClass::get($set))->id;
+                    }
+                } elseif ($upload  = Arr::get($value, 'upload')) {
+                    $options = null;
+                    $location = null;
+                    if (method_exists($model, 'mediaConfig')) {
+                        $options = Arr::get($this->model->mediaConfig(), $key);
+                    }
+                    if (is_array($upload)) {
+                        $location  = Arr::get($upload, 'location');
+                        $upload  = Arr::get($upload, 'file');
+                    }
+                    $upload = MediaStorage::active()->upload($upload, $options);
+                    if ($location) {
+                        $upload->location($location);
+                    }
+                    $file = $upload->save();
+                    $value = $file->id;
+                } elseif (Arr::get($value, 'detach')) {
+                    $value = null;
                 }
-            } elseif ($upload  = Arr::get($value, 'upload')) {
-                $options = null;
-                $location = null;
-                if (method_exists($model, 'mediaConfig')) {
-                    $options = Arr::get($this->model->mediaConfig(), $key);
-                }
-                if (is_array($upload)) {
-                    $location  = Arr::get($upload, 'location');
-                    $upload  = Arr::get($upload, 'file');
-                }
-                $upload = MediaStorage::active()->upload($upload, $options);
-                if ($location) {
-                    $upload->location($location);
-                }
-                $file = $upload->save();
-                $value = $file->id;
-            } elseif (Arr::get($value, 'detach')) {
-                $value = null;
+            } elseif (Api::isFile($value)) {
+                $value = $value->id;
+            } elseif (!Api::isUuid($value)) {
+                $fileClass = (string)config('media-library.models.file');
+                $value = optional($fileClass::get($value))->id;
             }
-        } elseif (Api::isFile($value)) {
-            $value = $value->id;
-        } elseif (!Api::isUuid($value)) {
-            $fileClass = (string)config('media-library.models.file');
-            $value = optional($fileClass::get($value))->id;
         }
 
         return [$key => $value];

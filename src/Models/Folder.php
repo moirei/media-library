@@ -295,7 +295,7 @@ class Folder extends Model
       */
      public function dowloadUrl(Carbon | int | null $ttl = null): string
      {
-          $route_name = config('media-library.route.name', '');
+          $routeName = config('media-library.route.name', '');
           if ($this->private) {
                if (is_int($ttl)) {
                     $ttl = now()->addMinutes($ttl);
@@ -304,13 +304,13 @@ class Folder extends Model
                }
 
                return URL::temporarySignedRoute(
-                    $route_name . 'download.folder.signed',
+                    $routeName . 'download.folder.signed',
                     $ttl,
                     ['folder' => $this->id]
                );
           }
 
-          return route($route_name . 'download.folder', ['folder' => $this->id]);
+          return route($routeName . 'download.folder', ['folder' => $this->id]);
      }
 
      /**

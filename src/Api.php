@@ -8,7 +8,9 @@ use MOIREI\MediaLibrary\Models\Folder;
 use MOIREI\MediaLibrary\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Arr;
+use League\Flysystem\CorruptedPathDetected;
 use League\Flysystem\Util;
+use LogicException;
 use MOIREI\MediaLibrary\Models\Attachment;
 use MOIREI\MediaLibrary\Traits\InteractsWithMedia;
 
@@ -122,7 +124,7 @@ class Api
             }
         }
 
-        return Util::normalizePath(join(DIRECTORY_SEPARATOR, $paths), DIRECTORY_SEPARATOR);
+        return static::normalizePath(join(DIRECTORY_SEPARATOR, $paths), DIRECTORY_SEPARATOR);
     }
 
     /**
@@ -425,5 +427,60 @@ class Api
             return null;
         }
         return $location;
+    }
+
+    /**
+     * Normalize path.
+     *
+     * @param string $path
+     * @throws LogicException
+     * @return string
+     */
+    public static function normalizePath($path)
+    {
+        $path = str_replace('\\', '/', $path);
+        $path =  static::removeFunkyWhiteSpace($path);
+        $parts = [];
+
+        foreach (explode('/', $path) as $part) {
+            switch ($part) {
+                case '':
+                case '.':
+                    break;
+
+                case '..':
+                    if (empty($parts)) {
+                        throw new LogicException(
+                            'Path is outside of the defined root, path: [' . $path . ']'
+                        );
+                    }
+                    array_pop($parts);
+                    break;
+
+                default:
+                    $parts[] = $part;
+                    break;
+            }
+        }
+
+        $path = implode('/', $parts);
+
+        return $path;
+    }
+
+    /**
+     * Rejects unprintable characters and invalid unicode characters.
+     *
+     * @param string $path
+     *
+     * @return string $path
+     */
+    protected static function removeFunkyWhiteSpace($path)
+    {
+        if (preg_match('#\p{C}+#u', $path)) {
+            throw CorruptedPathDetected::forPath($path);
+        }
+
+        return $path;
     }
 }

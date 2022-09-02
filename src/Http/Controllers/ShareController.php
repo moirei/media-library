@@ -31,7 +31,7 @@ class ShareController extends Controller
             $folders = [];
         }
 
-        $route_name = config('media-library.route.name', '');
+        $routeName = config('media-library.route.name', '');
         $total = $files->sum('size');
 
         return view('media-library::content')->with([
@@ -55,7 +55,7 @@ class ShareController extends Controller
      */
     public function auth(SharedContent $shareable)
     {
-        $route_name = config('media-library.route.name', '');
+        $routeName = config('media-library.route.name', '');
 
         return view('media-library::auth')
             ->with([

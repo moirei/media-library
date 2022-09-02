@@ -35,50 +35,53 @@ class AsMediaFiles extends MediaCast
      */
     public function set($model, $key, $value, $attributes)
     {
-        if ($value instanceof FilesAttribute) {
-            $ids = $value->map->id;
-        } elseif (Arr::isAssoc($value)) {
-            if ($set = Arr::get($value, 'set')) {
-                $ids = Api::getFileIds($set);
-            } else {
-                if (!empty($attributes[$key])) {
-                    $ids = is_string($attributes[$key]) ? json_decode($attributes[$key], true) : [];
+        $ids = [];
+        if (!is_null($value)) {
+            if ($value instanceof FilesAttribute) {
+                $ids = $value->map->id;
+            } elseif (Arr::isAssoc($value)) {
+                if ($set = Arr::get($value, 'set')) {
+                    $ids = Api::getFileIds($set);
                 } else {
-                    $ids = [];
-                }
-                if ($attach  = Arr::get($value, 'attach')) {
-                    $ids = array_unique(array_merge($ids, Api::getFileIds($attach)), SORT_REGULAR);
-                }
-                if ($detach  = Arr::get($value, 'detach')) {
-                    $ids = array_diff($ids, Api::getFileIds($detach));
-                }
-                if ($uploads  = Arr::get($value, 'upload')) {
-                    $options = null;
-                    $location = null;
-                    if (method_exists($model, 'mediaConfig')) {
-                        $options = Arr::get($this->model->mediaConfig(), $key);
+                    if (!empty($attributes[$key])) {
+                        $ids = is_string($attributes[$key]) ? json_decode($attributes[$key], true) : [];
+                    } else {
+                        $ids = [];
                     }
-
-                    if (($is_array = is_array($uploads)) && Arr::isAssoc($uploads)) {
-                        $location  = Arr::get($uploads, 'location');
-                        $uploads  = Arr::get($uploads, 'files');
-                    } elseif (!$is_array) {
-                        $uploads = [$uploads];
+                    if ($attach  = Arr::get($value, 'attach')) {
+                        $ids = array_unique(array_merge($ids, Api::getFileIds($attach)), SORT_REGULAR);
                     }
-
-                    foreach ($uploads as $upload) {
-                        $upload = MediaStorage::active()->upload($upload, $options);
-                        if ($location) {
-                            $upload->location($location);
+                    if ($detach  = Arr::get($value, 'detach')) {
+                        $ids = array_diff($ids, Api::getFileIds($detach));
+                    }
+                    if ($uploads  = Arr::get($value, 'upload')) {
+                        $options = null;
+                        $location = null;
+                        if (method_exists($model, 'mediaConfig')) {
+                            $options = Arr::get($this->model->mediaConfig(), $key);
                         }
-                        if ($upload->validate()) {
-                            $ids[] = $upload->save()->id;
+
+                        if (($is_array = is_array($uploads)) && Arr::isAssoc($uploads)) {
+                            $location  = Arr::get($uploads, 'location');
+                            $uploads  = Arr::get($uploads, 'files');
+                        } elseif (!$is_array) {
+                            $uploads = [$uploads];
+                        }
+
+                        foreach ($uploads as $upload) {
+                            $upload = MediaStorage::active()->upload($upload, $options);
+                            if ($location) {
+                                $upload->location($location);
+                            }
+                            if ($upload->validate()) {
+                                $ids[] = $upload->save()->id;
+                            }
                         }
                     }
                 }
+            } else {
+                $ids = Api::getFileIds($value);
             }
-        } else {
-            $ids = Api::getFileIds($value);
         }
 
         return [
