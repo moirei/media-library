@@ -42,7 +42,7 @@ class AsMediaItem extends MediaCast
                     $options = null;
                     $location = null;
                     if (method_exists($model, 'mediaConfig')) {
-                        $options = Arr::get($this->model->mediaConfig(), $key);
+                        $options = Arr::get($model->mediaConfig(), $key);
                     }
                     if (is_array($upload)) {
                         $location  = Arr::get($upload, 'location');
@@ -53,11 +53,6 @@ class AsMediaItem extends MediaCast
                         $upload->location($location);
                     }
                     $upload->validate(true);
-                    if ($id = Arr::get($attributes, $key)) {
-                        // delete any existing file
-                        $fileClass = (string)config('media-library.models.file');
-                        optional($fileClass::get($id))->forceDelete();
-                    }
                     $file = $upload->save();
                     $value = $file->id;
                 } elseif (Arr::get($value, 'delete')) {

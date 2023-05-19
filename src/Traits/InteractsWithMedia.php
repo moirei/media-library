@@ -12,6 +12,9 @@ use MOIREI\MediaLibrary\Models\Attachment;
 use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\Casts\MediaCast;
 
+/**
+ * @property \Illuminate\Support\Collection<File> $media
+ */
 trait InteractsWithMedia
 {
     /**
@@ -166,21 +169,32 @@ trait InteractsWithMedia
     }
 
     /**
-     * Attach media files and keep all existing.
+     * Attach media files and delete all existing.
      * @param array|ArrayAccess $files
      */
     public function setOwnFiles(array | ArrayAccess $files): static
     {
         if ($this->exists) {
+            $existingFiles = $this->media()->get();
+
             $className = config('media-library.models.file');
             foreach ($files as $file) {
                 if (is_string($file)) {
                     $file = $className::find($file);
                 }
-                $file->update([
-                    'model_type' => $this->getMorphClass(),
-                    'model_id' => $this->getKey(),
-                ]);
+                if ($file) {
+                    /** @var File $file */
+                    $file->update([
+                        'model_type' => $this->getMorphClass(),
+                        'model_id' => $this->getKey(),
+                    ]);
+                }
+            }
+
+            // remove all existing files after
+            /** @var File */
+            foreach ($existingFiles as $file) {
+                $file->forceDelete();
             }
         } else {
             $this->queuedOwnedFiles = array_merge($this->queuedOwnedFiles, $files);

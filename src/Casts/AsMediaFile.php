@@ -46,7 +46,7 @@ class AsMediaFile extends MediaCast
                     $options = null;
                     $location = null;
                     if (method_exists($model, 'mediaConfig')) {
-                        $options = Arr::get($this->model->mediaConfig(), $key);
+                        $options = Arr::get($model->mediaConfig(), $key);
                     }
                     if (is_array($upload)) {
                         $location  = Arr::get($upload, 'location');

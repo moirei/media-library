@@ -511,10 +511,23 @@ class Upload
         ]));
 
         if ($this->model) {
-            if ($this->model->exists) {
-                $file->model()->associate($this->model);
-            } elseif (Api::interactsWithMedia($this->model)) {
+            if (Api::interactsWithMedia($this->model)) {
                 $this->model->setOwnFile($file);
+            } else {
+                // remove any existing files
+                $fileClass = (string)config('media-library.models.file');
+                $modelWhere = [
+                    'model_type' => $this->model->getMorphClass(),
+                    'model_id' => $this->model->getKey(),
+                ];
+                $files = $fileClass::where($modelWhere)->get();
+
+                /** @var File */
+                foreach ($files as $f) {
+                    $f->forceDelete();
+                }
+
+                $file->model()->associate($this->model);
             }
         }
 
@@ -671,7 +684,7 @@ class Upload
      */
     protected function applyCrop(Image $image)
     {
-        $crop = $this->options->get('filters');
+        $crop = $this->options->get('crop');
         if (!$crop) {
             if ($this->attachment) {
                 $crop = config('media-library.uploads.attachments.crop');

@@ -16,6 +16,41 @@ use MOIREI\MediaLibrary\Models\MediaStorage;
 use MOIREI\MediaLibrary\Traits\UploadsAttributeMedia;
 use Symfony\Component\HttpFoundation\File\File as SymfonyUploadedFile;
 
+/**
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property string $id
+ * @property string $name
+ * @property string $fqfn fully qualified file name
+ * @property string $location
+ * @property string $description
+ * @property bool $private
+ * @property string $filename
+ * @property string $mimetype
+ * @property string $mime
+ * @property string $type
+ * @property string $extension
+ * @property int $size
+ * @property int $original_size
+ * @property int $total_size
+ * @property Object $responsive
+ * @property Object $image
+ * @property Folder $folder
+ * @property Model|null $model
+ * @property MediaStorage $storage
+ * @property \Illuminate\Database\Eloquent\Collection $meta
+ *
+ * @method string path()
+ * @method string uri()
+ * @method string|null url()
+ * @method string|null protectedUrl()
+ * @method string|null dowloadUrl()
+ * @method string disk()
+ * @method bool isImage()
+ * @method string getContent()
+ * @method File setPrivate(bool $private = true)
+ * @method string|null publicUrl(\Carbon\Carbon | int | null $ttl = null, $routeOptions = [])
+ */
 class MediaItemAttribute implements Castable, AttributeMediaUpload, Arrayable, ArrayAccess
 {
     use UploadsAttributeMedia;
@@ -125,6 +160,14 @@ class MediaItemAttribute implements Castable, AttributeMediaUpload, Arrayable, A
     public static function castUsing(array $arguments)
     {
         return AsMediaItem::class;
+    }
+
+    /**
+     * Forward all other method calls.
+     */
+    public function __call($name, $arguments)
+    {
+        return optional($this->file)->$name(...$arguments);
     }
 
     /**

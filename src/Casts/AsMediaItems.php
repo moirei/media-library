@@ -51,7 +51,7 @@ class AsMediaItems extends MediaCast
                     $options = null;
                     $location = null;
                     if (method_exists($model, 'mediaConfig')) {
-                        $options = Arr::get($this->model->mediaConfig(), $key);
+                        $options = Arr::get($model->mediaConfig(), $key);
                     }
 
                     if (($is_array = is_array($uploads)) && Arr::isAssoc($uploads)) {

@@ -441,11 +441,14 @@ class MediaStorage extends Model
      * Profile a file request input, public url or local path
      *
      * @param UploadedFile|SymfonyUploadedFile|string $uploadable
-     * @param MediaOptions $options
+     * @param MediaOptions|array $options
      * @return Upload
      */
-    public function upload(UploadedFile | SymfonyUploadedFile | string $uploadable, ?MediaOptions $options = null): Upload
+    public function upload(UploadedFile | SymfonyUploadedFile | string $uploadable, MediaOptions|array $options = null): Upload
     {
+        if (is_array($options)) {
+            $options = new MediaOptions($options);
+        }
         if ($options && !$options->isset('storage')) {
             $options->storage($this);
         } else {

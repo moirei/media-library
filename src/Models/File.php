@@ -292,7 +292,7 @@ class File extends Model
      * Set visibility
      *
      * @param bool $private
-     * @return Folder
+     * @return File
      */
     public function setPrivate(bool $private = true): File
     {

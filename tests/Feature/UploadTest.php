@@ -9,6 +9,7 @@ use MOIREI\MediaLibrary\MediaLibraryServiceProvider;
 use MOIREI\MediaLibrary\Models\Attachment;
 use MOIREI\MediaLibrary\Models\File;
 use MOIREI\MediaLibrary\Models\MediaStorage;
+use MOIREI\MediaLibrary\Traits\InteractsWithMedia;
 use MOIREI\MediaLibrary\Upload;
 
 uses(DatabaseMigrations::class, RefreshDatabase::class)->group('media', 'upload');
@@ -138,6 +139,101 @@ it('should upload file for model', function () {
     Storage::disk($disk)->assertExists($uploadedFile->uri());
     expect($uploadedFile->model)->toBeInstanceOf(Model::class);
     expect($uploadedFile->model->id)->toEqual(1);
+});
+
+it('should override upload file for model', function () {
+    $disk = 'local';
+
+    $file1 = UploadedFile::fake()->image('avatar-1.jpg');
+    $file2 = UploadedFile::fake()->image('avatar-2.jpg');
+
+    MediaStorage::createAndUse([
+        'name' => 'Avatars',
+        'disk' => $disk
+    ]);
+
+    $model = new class([
+        'id' => 1,
+    ]) extends Model
+    {
+        protected $guarded = [];
+        protected $casts = [
+            'image' => AsMediaItem::class,
+        ];
+        public $exists = true;
+
+        public function save(array $options = [])
+        {
+            //
+        }
+    };
+
+    /** @var File */
+    $uploadedFile1 = Upload::make($file1)->for($model)->save();
+
+    Storage::disk($disk)->assertExists($uploadedFile1->uri());
+
+    expect($uploadedFile1->model)->toBeInstanceOf(Model::class);
+    expect($uploadedFile1->model->id)->toEqual(1);
+
+    /** @var File */
+    $uploadedFile2 = Upload::make($file2)->for($model)->save();
+
+    Storage::disk($disk)->assertExists($uploadedFile2->uri());
+    Storage::disk($disk)->assertMissing($uploadedFile1->uri());
+
+    expect($uploadedFile2->model)->toBeInstanceOf(Model::class);
+    expect($uploadedFile2->model->id)->toEqual(1);
+});
+
+/**
+ * TODO
+ * Requires real DB connection with model to test deletes
+ */
+xit('should override upload file for model [InteractsWithMedia]', function () {
+    $disk = 'local';
+
+    $file1 = UploadedFile::fake()->image('avatar-1.jpg');
+    $file2 = UploadedFile::fake()->image('avatar-2.jpg');
+
+    MediaStorage::createAndUse([
+        'name' => 'Avatars',
+        'disk' => $disk
+    ]);
+
+    $model = new class([
+        'id' => 1,
+    ]) extends Model
+    {
+        use InteractsWithMedia;
+        protected $guarded = [];
+        protected $casts = [
+            'image' => AsMediaItem::class,
+        ];
+        public $exists = true;
+
+        public function save(array $options = [])
+        {
+            //
+        }
+    };
+
+    /** @var File */
+    $uploadedFile1 = Upload::make($file1)->for($model)->save();
+
+    Storage::disk($disk)->assertExists($uploadedFile1->uri());
+
+    expect($uploadedFile1->model)->toBeInstanceOf(Model::class);
+    expect($uploadedFile1->model->id)->toEqual(1);
+
+    /** @var File */
+    $uploadedFile2 = Upload::make($file2)->for($model)->save();
+
+    Storage::disk($disk)->assertExists($uploadedFile2->uri());
+    Storage::disk($disk)->assertMissing($uploadedFile1->uri());
+
+    expect($uploadedFile2->model)->toBeInstanceOf(Model::class);
+    expect($uploadedFile2->model->id)->toEqual(1);
 });
 
 it('should upload file with meta', function () {

@@ -149,13 +149,13 @@ return [
             # Maximum width and height in pixels for the original image [ width, height, x, y]
             // 'crop' => [1200, 1200],
 
-            # Maximum width and height in pixels for the original image [ width, height, upSize, upWH ]
+            # Maximum width and height in pixels for the original image [ width, height, upSize, aspectRatio ]
             # upSize {bool} - Crop image even if size will be larger. (If set to `false` - size image will be as original).
             # aspectRatio {bool} - Constrain the current aspect-ratio of the image.
             'resize' => [1200, null, false, false],
 
             'responsive' => [
-                # Crop additional image variations [ width, height, upSize, upWH ]
+                # Crop additional image variations [ width, height, upSize, aspectRatio ]
                 'sizes' => [
                     'xsmall' => [38, 38, true, false],
                     'small' => [100, 100, true, false],

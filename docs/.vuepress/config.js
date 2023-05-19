@@ -58,7 +58,12 @@ module.exports = {
       { text: "Guide", link: "/installation/prepare-models" },
       { text: "Concepts", link: "/concepts" },
       { text: "Dynamic Imaging", link: "/guide/routes/dynamic-imaging" },
-      // { text: 'External', link: 'https://moirei.com', target:'_self', rel:false },
+      {
+        text: "Github",
+        link: "https://github.com/moirei/media-library",
+        target: "_self",
+      },
+      // { text: 'External', link: 'https://moirei.com', target:'_self' },
     ],
   },
   head: [
