@@ -7,6 +7,7 @@ use MOIREI\MediaLibrary\MediaLibraryServiceProvider;
 use MOIREI\MediaLibrary\Models\Folder;
 use MOIREI\MediaLibrary\Models\MediaStorage;
 use Illuminate\Http\UploadedFile;
+use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\Upload;
 
 uses(DatabaseMigrations::class, RefreshDatabase::class)->group('media', 'folder');
@@ -61,7 +62,7 @@ it('should create multiple folders from nested asserts', function () {
 
     expect($folder)->toBeInstanceOf(Folder::class);
     expect($folder->name)->toEqual('AndMore');
-    expect($folder->location)->toEqual('Images/Products/More');
+    expect($folder->location)->toEqual(Api::joinPaths('Images', 'Products', 'More'));
     expect(Folder::query()->count())->toEqual(4);
 });
 
@@ -89,23 +90,23 @@ it('should zip folder', function () {
 
     $stat = $zip->statIndex(0);
     expect($stat)->toBeArray();
-    expect($stat['name'])->toEqual('Test folder/avatar-1.jpg');
+    expect($stat['name'])->toEqual(Api::joinPaths('Test folder', 'avatar-1.jpg'));
 
     $stat = $zip->statIndex(1);
     expect($stat)->toBeArray();
-    expect($stat['name'])->toEqual('Test folder/Images/avatar-2.jpg');
+    expect($stat['name'])->toEqual(Api::joinPaths('Test folder', 'Images', 'avatar-2.jpg'));
 
     $stat = $zip->statIndex(2);
     expect($stat)->toBeArray();
-    expect($stat['name'])->toEqual('Test folder/Images/More/avatar-3.jpg');
+    expect($stat['name'])->toEqual(Api::joinPaths('Test folder', 'Images', 'More', 'avatar-3.jpg'));
 
     $stat = $zip->statIndex(3);
     expect($stat)->toBeArray();
-    expect($stat['name'])->toEqual('Test folder/Images/More/avatar-4.jpg');
+    expect($stat['name'])->toEqual(Api::joinPaths('Test folder', 'Images', 'More', 'avatar-4.jpg'));
 
     $stat = $zip->statIndex(4);
     expect($stat)->toBeArray();
-    expect($stat['name'])->toEqual('Test folder/Other/avatar-5.jpg');
+    expect($stat['name'])->toEqual(Api::joinPaths('Test folder', 'Other', 'avatar-5.jpg'));
 
     $zip->close();
 });

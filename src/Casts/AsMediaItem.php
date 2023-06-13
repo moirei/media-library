@@ -38,6 +38,8 @@ class AsMediaItem extends MediaCast
             if ($value instanceof MediaItemAttribute) {
                 $value = optional($value->file())->id;
             } elseif (is_array($value)) {
+                $fileClass = (string)config('media-library.models.file');
+
                 if ($upload = Arr::get($value, 'upload')) {
                     $options = null;
                     $location = null;
@@ -54,10 +56,12 @@ class AsMediaItem extends MediaCast
                     }
                     $upload->validate(true);
                     $file = $upload->save();
+                    if ($id = Arr::get($attributes, $key)) {
+                        optional($fileClass::get($id))->forceDelete();
+                    }
                     $value = $file->id;
                 } elseif (Arr::get($value, 'delete')) {
                     if ($id = Arr::get($attributes, $key)) {
-                        $fileClass = (string)config('media-library.models.file');
                         optional($fileClass::get($id))->forceDelete();
                     }
                     $value = null;

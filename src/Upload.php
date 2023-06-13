@@ -549,6 +549,7 @@ class Upload
                 $image,
                 $path,
                 $storage->disk,
+                $private
             );
             $attributes['total_size'] = $attributes['size'] + $extraSize;
             $attributes['responsive'] = $responsive;
@@ -701,8 +702,9 @@ class Upload
      * @param Image $image
      * @param string $path
      * @param string $disk
+     * @param bool $private
      */
-    protected function saveResponsiveSizes(Image $image, string $path, string $disk)
+    protected function saveResponsiveSizes(Image $image, string $path, string $disk, bool $private)
     {
         $responsive = [];
         $size = 0;
@@ -736,7 +738,7 @@ class Upload
 
                 $size += strlen($data);
 
-                Storage::disk($disk)->put(Api::joinPaths($path, "$name.$extension"), $data);
+                Storage::disk($disk)->put(Api::joinPaths($path, "$name.$extension"), $data, Api::visibility($private));
                 $image->reset();
             }
         }

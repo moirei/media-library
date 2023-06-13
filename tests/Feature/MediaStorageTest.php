@@ -49,10 +49,10 @@ it('expects storage to resolve paths', function () {
         'location' => 'products',
     ]);
 
-    expect($storage->path())->toEqual('media/files/products');
-    expect($storage->path('Images'))->toEqual('media/files/products/Images');
-    expect($storage->path('Images/Products'))->toEqual('media/files/products/Images/Products');
-    expect($storage->path('Images', 'Products'))->toEqual('media/files/products/Images/Products');
+    expect($storage->path())->toEqual(Api::joinPaths('media', 'files', 'products'));
+    expect($storage->path('Images'))->toEqual(Api::joinPaths('media', 'files', 'products', 'Images'));
+    expect($storage->path(Api::joinPaths('Images', 'Products')))->toEqual(Api::joinPaths('media', 'files', 'products', 'Images', 'Products'));
+    expect($storage->path('Images', 'Products'))->toEqual(Api::joinPaths('media', 'files', 'products', 'Images', 'Products'));
 });
 
 it('expects UNUSED storage to be empty', function () {

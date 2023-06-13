@@ -5,6 +5,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\MediaLibraryServiceProvider;
 use MOIREI\MediaLibrary\Models\Folder;
 use MOIREI\MediaLibrary\Models\MediaStorage;
@@ -109,7 +110,7 @@ it('should move folder', function () {
     $movedFolder = Folder::find($oldFolder->id);
     $response->assertStatus(200);
 
-    expect($movedFolder->location)->toContain('new/location');
+    expect($movedFolder->location)->toContain(Api::joinPaths('new', 'location'));
     expect($movedFolder->location)->not->toEqual($oldFolder->location);
     expect($movedFolder->path())->not->toEqual($oldFolder->path());
     Storage::disk('local')->assertExists($movedFolder->path());

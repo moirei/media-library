@@ -65,7 +65,7 @@ return [
 
         # Used to create a new storage if none is specified at creation.
         # Accepts all Laravel "Supported Drivers"
-        'disk' => env('FILESYSTEM_DRIVER', 'public'),
+        'disk' => env('FILESYSTEM_DISK', 'public'),
 
         # Controls if files/folders are public vs private
         'private' => false,
@@ -122,7 +122,7 @@ return [
         # Configure file attachments for rich-text integration.
         'attachments' => [
             # disk to store
-            'disk' => env('FILESYSTEM_DRIVER', 'public'),
+            'disk' => env('FILESYSTEM_DISK', 'public'),
 
             # location to store attached files. Relative to storage "folder" above.
             # Be sure not to use the location for any other storage.

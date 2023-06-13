@@ -110,7 +110,6 @@ class Api
     /**
      * Join paths
      *
-     * TODO: use `DIRECTORY_SEPARATOR` instead of `/`??
      * @example joinPaths('my/paths/', '/are/', 'a/r/g/u/m/e/n/t/s/')
      * @return string
      */
@@ -436,13 +435,13 @@ class Api
      * @throws LogicException
      * @return string
      */
-    public static function normalizePath($path)
+    public static function normalizePath($path, $separator = '/')
     {
-        $path = str_replace('\\', '/', $path);
+        $path = str_replace('\\', $separator, $path);
         $path =  static::removeFunkyWhiteSpace($path);
         $parts = [];
 
-        foreach (explode('/', $path) as $part) {
+        foreach (explode($separator, $path) as $part) {
             switch ($part) {
                 case '':
                 case '.':
@@ -463,7 +462,7 @@ class Api
             }
         }
 
-        $path = implode('/', $parts);
+        $path = implode($separator, $parts);
 
         return $path;
     }

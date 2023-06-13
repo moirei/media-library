@@ -98,7 +98,7 @@ class MediaItemAttribute implements Castable, AttributeMediaUpload, Arrayable, A
     public function delete()
     {
         if ($this->exists()) {
-            $this->file->delete();
+            $this->file->forceDelete();
         }
     }
 

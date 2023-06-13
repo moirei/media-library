@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\MediaLibraryServiceProvider;
 use MOIREI\MediaLibrary\MediaOptions;
 use MOIREI\MediaLibrary\Models\Folder;
@@ -72,7 +73,7 @@ it('expects MediaOptions to set location from location', function () {
 
     $options = MediaOptions::make()->folder('images/products');
 
-    expect($options->get('location'))->toEqual('images/products');
+    expect($options->get('location'))->toEqual(Api::joinPaths('images', 'products'));
     expect($options->get('folder'))->toBeInstanceOf(Folder::class);
     expect($options->get('folder')->name)->toEqual('products');
     expect($options->get('folder')->location)->toEqual('images');
