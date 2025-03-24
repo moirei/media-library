@@ -10,8 +10,8 @@ use MOIREI\MediaLibrary\Models\SharedContent;
 trait MediaItem
 {
     abstract public function path(): string;
-    abstract public function publicUrl(Carbon | int | null $ttl = null): string|null;
-    abstract public function url(Carbon | int | null $ttl = null): string|null;
+    abstract public function publicUrl($ttl = null): string|null;
+    abstract public function url($ttl = null): string|null;
     abstract public function protectedUrl(): string|null;
 
     /**

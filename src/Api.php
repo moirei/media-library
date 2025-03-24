@@ -8,8 +8,8 @@ use MOIREI\MediaLibrary\Models\Folder;
 use MOIREI\MediaLibrary\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\URL;
 use League\Flysystem\CorruptedPathDetected;
-use League\Flysystem\Util;
 use LogicException;
 use MOIREI\MediaLibrary\Models\Attachment;
 use MOIREI\MediaLibrary\Traits\InteractsWithMedia;
@@ -465,6 +465,36 @@ class Api
         $path = implode($separator, $parts);
 
         return $path;
+    }
+
+    /**
+     * Get route with config prefixed.
+     *
+     * @param string $path
+     * @param array $params
+     * @return string
+     */
+    public static function route(string $name, $params = []){
+        $routeName = config('media-library.route.name', '');
+        return URL::route($routeName . $name, $params);
+    }
+
+    /**
+     * Get temporary signed route with config prefixed.
+     *
+     * @param string $path
+     * @param \DateTimeInterface|\DateInterval|int $expiration
+     * @param array $params
+     * @return string
+     */
+    public static function routeSigned(string $name, $expiration, $params = []){
+        $routeName = config('media-library.route.name', '');
+
+        return URL::temporarySignedRoute(
+            $routeName . $name,
+            $expiration,
+            $params
+        );
     }
 
     /**

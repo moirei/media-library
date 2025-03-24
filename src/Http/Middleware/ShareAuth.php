@@ -5,6 +5,7 @@ namespace MOIREI\MediaLibrary\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use MOIREI\MediaLibrary\Api;
 
 class ShareAuth
 {
@@ -20,9 +21,9 @@ class ShareAuth
             return $next($request);
         }
 
-        $name = config('media-library.route.name');
         $shared = $request->route('shared');
+        $url = Api::route("share.auth", ['shared' => $shared]);
 
-        return redirect()->route("${name}share.auth", ['shared' => $shared]);
+        return redirect()->to($url);
     }
 }

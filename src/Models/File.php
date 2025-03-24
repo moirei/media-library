@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
 use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\Casts\ResponsiveImage;
 use MOIREI\MediaLibrary\Traits\MediaItem;
@@ -31,8 +30,8 @@ use MOIREI\MediaLibrary\Traits\UsesUuid;
  * @property int $size
  * @property int $original_size
  * @property int $total_size
- * @property Object $responsive
- * @property Object $image
+ * @property object $responsive
+ * @property object $image
  * @property Folder $folder
  * @property Model|null $model
  * @property MediaStorage $storage
@@ -198,7 +197,7 @@ class File extends Model
      * @param  MediaStorage|string $storage
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeStorage($query, MediaStorage|string $storage)
+    public function scopeStorage($query, $storage)
     {
         return $query->where('storage_id', is_string($storage) ? $storage : $storage->id);
     }
@@ -209,7 +208,7 @@ class File extends Model
      * @param Carbon|int|null $age
      * @return void
      */
-    public function pruneStale(Carbon | int | null $age = null)
+    public function pruneStale($age = null)
     {
         if (is_int($age)) {
             $age = now()->subDays($age);
@@ -305,15 +304,18 @@ class File extends Model
     }
 
     /**
-     * Get file's public url
+     * Get file's public url. Returns dynamic route URL
+     * if routeOptions is provided
      *
      * @param Carbon|int|null $ttl
-     * @param array $routeOptions
+     * @param array|null $routeOptions
      * @return string|null
      */
-    public function publicUrl(Carbon | int | null $ttl = null, $routeOptions = []): string|null
+    public function publicUrl($ttl = null, ?array $routeOptions = null): string|null
     {
         $disk = $this->disk();
+        $params = array_merge($routeOptions?: [], ['file' => $this->id]);
+
         if ($this->private) {
             if (is_int($ttl)) $ttl = now()->addMinutes($ttl);
             elseif (is_null($ttl)) $ttl = now()->addMinutes(30);
@@ -325,40 +327,35 @@ class File extends Model
                 );
             }
 
-            $routeName = config('media-library.route.name', '');
-
-            return URL::temporarySignedRoute(
-                $routeName . 'file.signed',
-                $ttl,
-                array_merge($routeOptions, ['file' => $this->id])
-            );
+            return Api::routeSigned('file.signed', $ttl, $params);
         }
 
-        return Storage::disk($disk)->url($this->uri());
+        if(is_null($routeOptions)){
+            return Storage::disk($disk)->url($this->uri());
+        }
+
+        return Api::route('file', $params);
     }
 
     /**
      * Get file's internal url
      *
-     * @param strine|File $file
+     * @param string|File $file
      * @param Carbon|int|null $ttl
      * @return string|null
      */
-    public function url(Carbon | int | null $ttl = null): string|null
+    public function url($ttl = null): string|null
     {
-        $routeName = config('media-library.route.name', '');
+        $params = ['file' => $this->id];
+
         if ($this->private) {
             if (is_int($ttl)) $ttl = now()->addMinutes($ttl);
             elseif (is_null($ttl)) $ttl = now()->addMinutes(30);
 
-            return URL::temporarySignedRoute(
-                $routeName . 'file.signed',
-                $ttl,
-                ['file' => $this->id]
-            );
+            return Api::routeSigned('file.signed', $ttl, $params);
         }
 
-        return route($routeName . 'file', ['file' => $this->id]);
+        return Api::route('file', $params);
     }
 
     /**
@@ -367,31 +364,27 @@ class File extends Model
      */
     public function protectedUrl(): string|null
     {
-        $routeName = config('media-library.route.name', '');
-        return route($routeName . 'file.protected', ['file' => $this->id]);
+        return Api::route('file.protected', ['file' => $this->id]);
     }
 
     /**
      * Get file's download url
      *
-     * @param strine|File $file
+     * @param string|File $file
      * @param Carbon|int|null $ttl
      * @return string
      */
-    public function dowloadUrl(Carbon | int | null $ttl = null): string
+    public function downloadUrl($ttl = null): string
     {
-        $routeName = config('media-library.route.name', '');
+        $params = ['file' => $this->id];
+
         if ($this->private) {
             if (is_int($ttl)) $ttl = now()->addMinutes($ttl);
             elseif (is_null($ttl)) $ttl = now()->addMinutes(30);
 
-            return URL::temporarySignedRoute(
-                $routeName . 'download.signed',
-                $ttl,
-                ['file' => $this->id]
-            );
+            return Api::routeSigned('download.signed', $ttl, $params);
         }
 
-        return route($routeName . 'download', ['file' => $this->id]);
+        return Api::route('download', $params);
     }
 }

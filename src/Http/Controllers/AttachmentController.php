@@ -28,7 +28,7 @@ class AttachmentController extends Controller
         }
 
         $upload = Upload::attachment(
-            $request->file('file'),
+            $request->file('file')
         );
 
         if (config('media-library.clean_file_name')) {

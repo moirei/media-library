@@ -66,13 +66,19 @@ class ApiController extends Controller
      * @param File $file
      * @return \Illuminate\Http\Response
      */
-    public function getPublic(File $file)
+    public function getPublic(Request $request, File $file)
     {
         if ($file->private) {
             abort(401);
         }
 
-        return response($file->getContent(), 200)
+        if ($file->isImage()) {
+            $content = MagicImager::fromRequest($request)->get($file);
+        } else {
+            $content = $file->getContent();
+        }
+
+        return response($content, 200)
             ->header('Content-Type', $file->mimetype)
             ->header('Content-Disposition', 'inline');
     }
@@ -448,7 +454,7 @@ class ApiController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function downloadableLink(Request $request, File|Folder $file)
+    public function downloadableLink(Request $request, $file)
     {
         $min_ttl = 60 * 30; // 30 mins
         $request->validate([
@@ -457,7 +463,7 @@ class ApiController extends Controller
         $ttl = now()->addSeconds($request->get('ttl', $min_ttl));
 
         return response()->json([
-            'url' => $file->dowloadUrl($ttl),
+            'url' => $file->downloadUrl($ttl),
             'filename' => Api::isFolder($file) ? Str::snake($file->name) . '.zip' : $file->filename,
             'mimetype' => $file->mimetype,
         ]);
@@ -470,7 +476,7 @@ class ApiController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function shareablebleLink(Request $request, Folder|File $file)
+    public function shareablebleLink(Request $request, $file)
     {
         $request->validate([
             'name' =>                 'string|max:64',

@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
 use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\Traits\MediaItem;
 use MOIREI\MediaLibrary\Traits\UsesUuid;
@@ -25,7 +24,7 @@ use MOIREI\MediaLibrary\Traits\UsesUuid;
  * @property string $location
  * @property string $description
  * @property bool $private
- * @property Object $responsive
+ * @property object $responsive
  * @property MediaStorage $storage
  * @property string $type
  * @property Folder|null $parent
@@ -185,7 +184,7 @@ class Folder extends Model
       * @param  MediaStorage|string $storage
       * @return \Illuminate\Database\Eloquent\Builder
       */
-     public function scopeStorage($query, MediaStorage|string $storage)
+     public function scopeStorage($query, $storage)
      {
           return $query->where('storage_id', is_string($storage) ? $storage : $storage->id);
      }
@@ -196,7 +195,7 @@ class Folder extends Model
       * @param Carbon|int|null $age
       * @return void
       */
-     public function pruneStale(Carbon | int | null $age = null)
+     public function pruneStale($age = null)
      {
           if (is_int($age)) {
                $age = now()->subDays($age);
@@ -260,7 +259,7 @@ class Folder extends Model
       * @param Carbon|int|null $ttl
       * @return string|null
       */
-     public function publicUrl(Carbon | int | null $ttl = null): string|null
+     public function publicUrl($ttl = null): string|null
      {
           return null;
      }
@@ -271,7 +270,7 @@ class Folder extends Model
       * @param Carbon|int|null $ttl
       * @return string|null
       */
-     public function url(Carbon | int | null $ttl = null): string|null
+     public function url($ttl = null): string|null
      {
           return $this->path();
      }
@@ -289,13 +288,12 @@ class Folder extends Model
      /**
       * Get file's download url
       *
-      * @param strine|File $file
+      * @param string|File $file
       * @param Carbon|int|null $ttl
       * @return string
       */
-     public function dowloadUrl(Carbon | int | null $ttl = null): string
+     public function downloadUrl($ttl = null): string
      {
-          $routeName = config('media-library.route.name', '');
           if ($this->private) {
                if (is_int($ttl)) {
                     $ttl = now()->addMinutes($ttl);
@@ -303,14 +301,14 @@ class Folder extends Model
                     $ttl = now()->addMinutes(30);
                }
 
-               return URL::temporarySignedRoute(
-                    $routeName . 'download.folder.signed',
+               return Api::routeSigned(
+                    'download.folder.signed',
                     $ttl,
                     ['folder' => $this->id]
                );
           }
 
-          return route($routeName . 'download.folder', ['folder' => $this->id]);
+          return Api::route('download.folder', ['folder' => $this->id]);
      }
 
      /**

@@ -14,6 +14,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Arr;
+use MOIREI\MediaLibrary\Api;
 
 class SharedContent extends Model implements AuthorizableContract, AuthenticatableContract
 {
@@ -74,7 +75,7 @@ class SharedContent extends Model implements AuthorizableContract, Authenticatab
      * @param Folder|File $item
      * @return SharedContent
      */
-    public static function make(Folder | File $item): SharedContent
+    public static function make($item): SharedContent
     {
         $shareable = new self();
         $shareable->from($item);
@@ -88,7 +89,7 @@ class SharedContent extends Model implements AuthorizableContract, Authenticatab
      * @param Folder|File $item
      * @return SharedContent
      */
-    public function from(Folder | File $item): SharedContent
+    public function from($item): SharedContent
     {
         $this->attributes['shareable_type'] = $item->getMorphClass();
         $this->attributes['shareable_id'] = $item->getKey();
@@ -104,8 +105,7 @@ class SharedContent extends Model implements AuthorizableContract, Authenticatab
      */
     public function url(): string
     {
-        $routeName = config('media-library.route.name', '');
-        return route($routeName . 'share', ['shared' => $this->id]);
+        return Api::route('share', ['shared' => $this->id]);
     }
 
     /**

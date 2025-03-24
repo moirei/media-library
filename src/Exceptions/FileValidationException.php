@@ -10,11 +10,11 @@ class FileValidationException extends \Exception
     {
         return new self(__('File size limit exceeded'));
     }
-    public static function forbiddenFormat(string $format = null)
+    public static function forbiddenFormat(?string $format = null)
     {
         return new self(__('Forbidden file format') . $format ? " $format" : "");
     }
-    public static function unreachableUrl(string $url = null)
+    public static function unreachableUrl(?string $url = null)
     {
         return new self(__('Unreachable url') . $url ? " $url" : "");
     }

@@ -1,7 +1,5 @@
 # Generating Urls
 
-
-
 ## Public Urls
 
 Generate a public url for a file.
@@ -21,7 +19,6 @@ $url = $file->publicUrl(now()->addMinutes(60));
 $url = (string)$file; // casting files/folders to string will return a public url
 ```
 
-
 ## Protected Urls
 
 Protected routes provide an additional layer of security. Actual protection is decided by the middleware you configure for the route group.
@@ -31,7 +28,6 @@ To fully set it up, define middles for `file.protected` in `route.middleware` of
 ```php
 $url = $file->protectedUrl();
 ```
-
 
 ## Local Urls
 
@@ -45,8 +41,6 @@ $url = $file->url();
 $url = $file->url(now()->addMinutes(60));
 ```
 
-
-
 ## Download Urls
 
 Generated url can be used to automatically download the file.
@@ -54,7 +48,7 @@ Generated url can be used to automatically download the file.
 For private files, the url is signed with a default 30s TTL.
 
 ```php
-$url = $file->dowloadUrl();
+$url = $file->downloadUrl();
 // Or
-$url = $file->dowloadUrl(now()->addMinutes(60));
+$url = $file->downloadUrl(now()->addMinutes(60));
 ```

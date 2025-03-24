@@ -59,8 +59,8 @@ class Attachment extends Model
      */
     public static function store(
         UploadedFile $attachment,
-        string $location = null,
-        string $disk = null
+        ?string $location = null,
+        ?string $disk = null
     ): Attachment {
         return Upload::attachment($attachment)
             ->location($location)
@@ -126,7 +126,7 @@ class Attachment extends Model
      * @param Carbon|int $age
      * @return void
      */
-    public static function pruneStale(Carbon | int $age = 1)
+    public static function pruneStale($age = 1)
     {
         if (is_int($age)) {
             $age = now()->subDays($age);
@@ -179,7 +179,7 @@ class Attachment extends Model
         return Api::joinPaths(
             config('media-library.folder', 'media'),
             config('media-library.uploads.attachments.location', 'attachments'),
-            $this->filename,
+            $this->filename
         );
     }
 }

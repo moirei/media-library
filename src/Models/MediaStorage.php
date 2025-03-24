@@ -6,14 +6,12 @@ use Illuminate\Database\Eloquent\Casts\AsCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use MOIREI\MediaLibrary\Api;
 use MOIREI\MediaLibrary\Traits\UsesUuid;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use MOIREI\MediaLibrary\Exceptions\StorageRequiredException;
 use MOIREI\MediaLibrary\MediaOptions;
@@ -94,7 +92,7 @@ class MediaStorage extends Model
      * @param MediaStorage|string $storage
      * @return MediaStorage
      */
-    public static function use(MediaStorage|string $storage): MediaStorage
+    public static function use($storage): MediaStorage
     {
         if (is_string($storage)) {
             $storage = self::get($storage);
@@ -266,7 +264,7 @@ class MediaStorage extends Model
             config('media-library.folder', 'media'),
             config('media-library.uploads.location', 'files'),
             $this->location,
-            ...$locations,
+            ...$locations
         );
     }
 
@@ -274,9 +272,9 @@ class MediaStorage extends Model
      * Get folder or create one if it doesnt exist
      *
      * @param string $location
-     * @return Folder
+     * @return Folder|null
      */
-    public function assertFolder(string $location): Folder
+    public function assertFolder(string $location): Folder|null
     {
         $data = Api::extractPathFolder($location);
 
@@ -338,12 +336,12 @@ class MediaStorage extends Model
     public function resolveFolder(
         string $location,
         bool $create = false,
-        bool $absolute = false,
+        bool $absolute = false
     ): Folder | null {
         if ($absolute) {
             $path = Api::joinPaths(
                 config('media-library.folder'),
-                $location,
+                $location
             );
         } else {
             $path = $location;
@@ -441,10 +439,10 @@ class MediaStorage extends Model
      * Profile a file request input, public url or local path
      *
      * @param UploadedFile|SymfonyUploadedFile|string $uploadable
-     * @param MediaOptions|array $options
+     * @param MediaOptions|array|null $options
      * @return Upload
      */
-    public function upload(UploadedFile | SymfonyUploadedFile | string $uploadable, MediaOptions|array $options = null): Upload
+    public function upload($uploadable, $options = null): Upload
     {
         if (is_array($options)) {
             $options = new MediaOptions($options);
@@ -490,7 +488,7 @@ class MediaStorage extends Model
      * @param Folder|string $location
      * @return void
      */
-    public function move(File $file, Folder | string $location)
+    public function move(File $file, $location)
     {
         if (is_string($location)) {
             if (Api::isUuid($location)) {
@@ -511,7 +509,7 @@ class MediaStorage extends Model
         }
         $location = Api::joinPaths(
             $folder->location,
-            $folder->name,
+            $folder->name
         );
 
         $path = $this->path($location, $file->id);
@@ -538,7 +536,7 @@ class MediaStorage extends Model
      * @param Folder|string $location
      * @return void
      */
-    public function moveFolder(Folder $folder, Folder | string $location)
+    public function moveFolder(Folder $folder, $location)
     {
         if (is_string($location)) {
             if (Api::isUuid($location)) {
@@ -559,7 +557,7 @@ class MediaStorage extends Model
         }
         $location = Api::joinPaths(
             $parent->location,
-            $parent->name,
+            $parent->name
         );
 
         $newLocation = Api::joinPaths($location, $folder->name);
@@ -592,7 +590,7 @@ class MediaStorage extends Model
      * @param array|string $where
      * @return File
      */
-    public function findFile(array|string $where)
+    public function findFile($where)
     {
         if (is_string($where)) {
             $where = [Api::isUuid($where) ? 'id' : 'fqfn' => $where];
@@ -607,7 +605,7 @@ class MediaStorage extends Model
      * @param array|string $where
      * @return Folder
      */
-    public function findFolder(array|string $where)
+    public function findFolder($where)
     {
         if (is_string($where)) {
             if (Api::isUuid($where)) {

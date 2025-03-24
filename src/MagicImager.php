@@ -103,7 +103,7 @@ final class MagicImager
      * @throws \Illuminate\Validation\ValidationException
      * @throws \Exception
      */
-    public function get(string|File $file)
+    public function get($file)
     {
         /** @var File */
         $file = is_string($file) ? File::findOrFail($file) : $file;
@@ -116,7 +116,8 @@ final class MagicImager
         $manager = new ImageManager(['driver' => config('media-library.driver', 'gd')]);
         $content = Storage::disk($file->disk())->get($file->uri());
 
-        return $manager->cache(function (Image|ImageCache $image) use ($content) {
+        return $manager->cache(function ($image) use ($content) {
+            /** @var Image|ImageCache $image */
             $image = $image->make($content);
 
             $this->applyFlip($image);
@@ -153,7 +154,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyFlip(Image|ImageCache $image)
+    protected function applyFlip($image)
     {
         if ($direction = Arr::get($this->options, 'flip')) {
             $image->flip($direction);
@@ -165,7 +166,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyText(Image|ImageCache $image)
+    protected function applyText($image)
     {
         if ($text = Arr::get($this->options, 'text')) {
             $image->text(...$text);
@@ -177,7 +178,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyCircle(Image|ImageCache $image)
+    protected function applyCircle($image)
     {
         if ($circle = Arr::has($this->options, 'circle')) {
             $image->circle(
@@ -201,7 +202,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyResize(Image|ImageCache $image)
+    protected function applyResize($image)
     {
         $width = Arr::get($this->options, 'width');
         $height = Arr::get($this->options, 'height');
@@ -242,7 +243,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyBrightness(Image|ImageCache $image)
+    protected function applyBrightness($image)
     {
         if ($brightness = Arr::get($this->options, 'brightness')) {
             $image->brightness($brightness);
@@ -254,7 +255,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyContrast(Image|ImageCache $image)
+    protected function applyContrast($image)
     {
         if ($contrast = Arr::get($this->options, 'contrast')) {
             $image->contrast($contrast);
@@ -266,7 +267,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyBlur(Image|ImageCache $image)
+    protected function applyBlur($image)
     {
         if ($blur = Arr::get($this->options, 'blur')) {
             $image->blur($blur);
@@ -278,7 +279,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applySharpness(Image|ImageCache $image)
+    protected function applySharpness($image)
     {
         if ($sharpness = Arr::get($this->options, 'sharp')) {
             $image->sharpen($sharpness);
@@ -290,7 +291,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyGreyscale(Image|ImageCache $image)
+    protected function applyGreyscale($image)
     {
         if (Arr::get($this->options, 'grey')) {
             $image->greyscale();
@@ -308,7 +309,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyFunctions(Image|ImageCache $image)
+    protected function applyFunctions($image)
     {
         if ($functions = Arr::get($this->options, 'func')) {
             // except resize functions
@@ -323,7 +324,7 @@ final class MagicImager
      *
      * @param Image|ImageCache $image
      */
-    protected function applyPixelate(Image|ImageCache $image)
+    protected function applyPixelate($image)
     {
         if ($pixelation = Arr::get($this->options, 'pixelate')) {
             $image->pixelate($pixelation);

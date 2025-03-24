@@ -31,7 +31,6 @@ class ShareController extends Controller
             $folders = [];
         }
 
-        $routeName = config('media-library.route.name', '');
         $total = $files->sum('size');
 
         return view('media-library::content')->with([
@@ -42,9 +41,9 @@ class ShareController extends Controller
             'can_remove' => $shareable->can_remove,
             'can_upload' => $shareable->can_upload && Api::isFolder($shareable->shareable),
             'can_download' => ($shareable->max_downloads === -1) || ($shareable->max_downloads < $shareable->downloads),
-            'upload_url' => route("${route_name}share.upload", ['shared' => $shareable->id]),
-            'download_url' => route("${route_name}share.download", ['shared' => $shareable->id]),
-            'signout_url' => route("${route_name}share.signout", ['shared' => $shareable->id]),
+            'upload_url' => Api::route("share.upload", ['shared' => $shareable->id]),
+            'download_url' => Api::route("share.download", ['shared' => $shareable->id]),
+            'signout_url' => Api::route("share.signout", ['shared' => $shareable->id]),
         ]);
     }
 
@@ -55,12 +54,10 @@ class ShareController extends Controller
      */
     public function auth(SharedContent $shareable)
     {
-        $routeName = config('media-library.route.name', '');
-
         return view('media-library::auth')
             ->with([
                 'shareable' => $shareable,
-                'route' => route("${route_name}share.auth.post", ['shared' => $shareable->id]),
+                'route' => Api::route("share.auth.post", ['shared' => $shareable->id]),
             ]);
     }
 
@@ -95,10 +92,9 @@ class ShareController extends Controller
         }
 
         $request->session()->put("authenticated:$shareable->id", time());
-        $name = config('media-library.route.name');
 
         return redirect()->intended(
-            route("${name}share", ['shared' => $shareable->id])
+            Api::route("share", ['shared' => $shareable->id])
         );
     }
 
@@ -207,15 +203,14 @@ class ShareController extends Controller
     /**
      * @param  \Illuminate\Http\Request $request
      * @param SharedContent $shareable
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Routing\Redirector|\Illuminate\Http\RedirectResponse
      */
     public function signout(Request $request, SharedContent $shareable)
     {
         $request->session()->forget("authenticated:$shareable->id");
-        $name = config('media-library.route.name');
 
         return redirect(
-            route("${name}share", ['shared' => $shareable->id])
+            Api::route("share", ['shared' => $shareable->id])
         );
     }
 }

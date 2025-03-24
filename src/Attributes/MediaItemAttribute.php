@@ -33,9 +33,9 @@ use Symfony\Component\HttpFoundation\File\File as SymfonyUploadedFile;
  * @property int $size
  * @property int $original_size
  * @property int $total_size
- * @property Object $responsive
- * @property Object $image
- * @property Folder $folder
+ * @property object $responsive
+ * @property object $image
+ * @property \MOIREI\MediaLibrary\Models\Folder $folder
  * @property Model|null $model
  * @property MediaStorage $storage
  * @property \Illuminate\Database\Eloquent\Collection $meta
@@ -44,7 +44,7 @@ use Symfony\Component\HttpFoundation\File\File as SymfonyUploadedFile;
  * @method string uri()
  * @method string|null url()
  * @method string|null protectedUrl()
- * @method string|null dowloadUrl()
+ * @method string|null downloadUrl()
  * @method string disk()
  * @method bool isImage()
  * @method string getContent()
@@ -64,7 +64,7 @@ class MediaItemAttribute implements Castable, AttributeMediaUpload, Arrayable, A
     public function __construct(
         protected Model $model,
         protected string $key,
-        protected ?File $file,
+        protected ?File $file
     ) {
         //
     }
@@ -76,7 +76,7 @@ class MediaItemAttribute implements Castable, AttributeMediaUpload, Arrayable, A
      * @property Closure $callback
      * @return File
      */
-    public function upload(UploadedFile|SymfonyUploadedFile $uploadedFile, ?Closure $callback = null): File
+    public function upload($uploadedFile, ?Closure $callback = null): File
     {
         return DB::transaction(function () use ($uploadedFile, $callback) {
             $this->delete();

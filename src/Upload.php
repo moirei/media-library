@@ -76,7 +76,7 @@ class Upload
      */
     protected array $attributes = [];
 
-    public function __construct(UploadedFile $upload, MediaOptions $options = null)
+    public function __construct(UploadedFile $upload, ?MediaOptions $options = null)
     {
         $this->upload = $upload;
         $this->options = $options ?: new MediaOptions;
@@ -100,7 +100,7 @@ class Upload
      * @param MediaOptions $options
      * @return self
      */
-    public static function make(UploadedFile $upload, MediaOptions $options = null): self
+    public static function make(UploadedFile $upload, ?MediaOptions $options = null): self
     {
         return new static($upload, $options);
     }
@@ -112,7 +112,7 @@ class Upload
      * @param MediaOptions $options
      * @return self
      */
-    public static function attachment(UploadedFile $upload, MediaOptions $options = null): self
+    public static function attachment(UploadedFile $upload, ?MediaOptions $options = null): self
     {
         return static::make($upload, $options)->asAttachment();
     }
@@ -124,7 +124,7 @@ class Upload
      * @param MediaOptions $options
      * @return File
      */
-    public static function uploadFile(UploadedFile $upload, MediaOptions $options = null): File
+    public static function uploadFile(UploadedFile $upload, ?MediaOptions $options = null): File
     {
         return static::make($upload, $options)->save();
     }
@@ -136,7 +136,7 @@ class Upload
      * @param MediaOptions $options
      * @return Attachment
      */
-    public static function uploadAttachment(UploadedFile $upload, MediaOptions $options = null): Attachment
+    public static function uploadAttachment(UploadedFile $upload, ?MediaOptions $options = null): Attachment
     {
         return static::attachment($upload, $options)->save();
     }
@@ -148,7 +148,7 @@ class Upload
      * @param string $name
      * @return Upload
      */
-    public static function fromUrl(string $url, MediaOptions $options = null): Upload
+    public static function fromUrl(string $url, ?MediaOptions $options = null): Upload
     {
         if (Str::startsWith($url, ['http://', 'https://'])) {
             if (!$stream = @fopen($url, 'r')) {
@@ -289,7 +289,7 @@ class Upload
      * @param Collection|array $meta
      * @return self
      */
-    public function withMeta(Collection|array $meta)
+    public function withMeta($meta)
     {
         $this->attributes['meta'] = collect($this->getAttribute('meta', []))->merge(collect($meta));
         return $this;
@@ -313,12 +313,12 @@ class Upload
      * @param int|null $size, bool == throw error
      * @return self
      */
-    public function maxSize(int | bool $size = null)
+    public function maxSize($size = null)
     {
         if (is_bool($size)) {
             $size = config('media-library.uploads.max_size.*');
         } else {
-            $size = config('media-library.uploads.max_size.' . $this->type);
+            $size = config('media-library.uploads.max_size.' . $this->getAttribute('type'));
         }
 
         $this->options->maxSize($size);
